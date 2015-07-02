@@ -1,0 +1,16 @@
+dependencies:
+- rpm:
+  - python${py3}
+- if $venv:
+  - rpm:
+    - python-virtualenv
+- else:
+  - rpm:
+    - python-setuptools
+devassistant_version: 0.11.1
+original_kwargs:
+  name: ircb
+  venv: ''
+project_type:
+- python
+- lib
