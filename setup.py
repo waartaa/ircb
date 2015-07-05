@@ -9,17 +9,17 @@ except:
 setup(
     name='ircb',
     version='0.0.1',
-    description='Short description',
+    description='A IRC bouncer',
     long_description=''.join(open('README.rst').readlines()),
     keywords='some, keywords',
-    author='yourname',
-    author_email='yourmail',
-    license='GPLv2',
+    author='Ratnadeep Debnath',
+    author_email='rtnpro@gmail.com',
+    license='MIT',
     packages=find_packages(),
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: GNU General Public License v2 (GPLv2)',
+        'License :: OSI Approved :: MIT',
         'Operating System :: POSIX :: Linux',
         'Programming Language :: Python',
         ]

@@ -1,0 +1,12 @@
+{
+  "user1:password": {
+    "name": "Freenode",
+    "nickname": "ircb_user",
+    "hostname": "irc.freenode.net",
+    "port": 6667,
+    "realname": "Your name",
+    "username": "",
+    "password": "",
+    "usermode": "0"
+  }    
+}
