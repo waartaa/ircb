@@ -30,13 +30,12 @@ class BouncerServerClientProtocol(Connection):
             verb, message = line.split(" ", 1)
             if verb == "QUIT":
                 pass
-            elif verb == "USER":
-                self.username = message.split(" ")[0]
             elif verb == "PASS":
-                self.password = message.split(" ")[0]
+                self.username, self.password = message.split(" ")[0].split(
+                    ':')
             else:
                 if self.forward:
-                    self.forward(self.encode(line))
+                    self.forward(line)
             if self.username and self.password and self.forward is None:
                 if self.authenticate(self.username, self.password) is None:
                     logger.debug(
@@ -76,7 +75,7 @@ class Bouncer(object):
     def get_network_handle(self, username, password, client):
         network_data = network_store.get('{}:{}'.format(username, password))
         if network_data is None:
-            return
+            raise
         key = '{}:{}'.format(username, network_data['name'])
         network = self.networks.get(key)
         if network is None:
@@ -95,22 +94,27 @@ class Bouncer(object):
         else:
             logger.debug('Reusing network connection: %s, %s, %s',
                          username, network_data['name'], network_data)
-            network.send('USER', username, network_data['usermode'], '*',
-                         ':{}'.format(network_data['realname']))
-            if network_data.get('password'):
-                network.send('PASS', network_data['password'])
+            joining_messages = network.get_joining_messages()
+            client.send(*[joining_messages])
+
+            # FIXME
+            for line in joining_messages.splitlines():
+                if 'JOIN' in line:
+                    words = line.split(' ')
+                    network.send('NAMES', words[2][1:])
 
         def forward(line):
             network = self.networks.get(key)
-            logger.debug('Forwarding {}->{}\n %s'.format(username, network),
-                         line.decode())
-            network.send(*[line])
+            if network:
+                logger.debug(
+                    'Forwarding {}->{}\n %s'.format(username, network), line)
+                network.send(*[line])
 
         self.register_client(username, password, client)
         return forward
 
     def register_network(self, username, network_name, network):
-        logger.debug('Registering new network: %s, %s', 
+        logger.debug('Registering new network: %s, %s',
                      username, network_name)
         key = '{}:{}'.format(username, network_name)
         _network = self.networks.get(key)
