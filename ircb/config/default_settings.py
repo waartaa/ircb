@@ -1,5 +1,6 @@
-import logging
-import logging.config
+SECRET_KEY = 'some key'
+
+DB_URI = 'sqlite:///ircb.db'
 
 LOGGING_CONF = dict(
     version=1,
@@ -35,6 +36,3 @@ LOGGING_CONF = dict(
         }
     ),
 )
-
-def load_config():
-    logging.config.dictConfig(LOGGING_CONF)
