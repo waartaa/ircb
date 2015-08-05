@@ -19,6 +19,7 @@ A versatile IRC bouncer.
 ## Setting up data
 - Creating a user: ``python manage.py createuser --username <your username> --email <your email> --password <your password>``
 - Creating a network for a user:
+
   ```
   python manage.py createnetwork --user <ircb username> --name <name of network> --nick <some nick> --host <IRC server host> --port <IRC server port>
   ```
