@@ -1,27 +1,29 @@
 import asyncio
 import logging
-from stores import network_store, auth_store
+import logging.config
 from network import Network
 from connection import Connection
+from ircb.models import get_session, Network as NetworkModel, User
+from ircb.config import settings
+
 
 logger = logging.getLogger('bouncer')
 
 
 class BouncerServerClientProtocol(Connection):
 
-    def __init__(self, get_network_handle):
+    def __init__(self, get_network_handle, unregister_client):
         self.network = None
-        self.username = None
-        self.password = None
         self.forward = None
         self.get_network_handle = get_network_handle
+        self.unregister_client = unregister_client
+        self.host, self.port = None, None
 
     def connection_made(self, transport):
         logger.debug('New client connection received')
         self.transport = transport
-
-    def authenticate(self, username, password):
-        return auth_store.auth(username, password)
+        self.host, self.port = self.transport.get_extra_info(
+            'socket').getpeername()
 
     def data_received(self, data):
         data = self.decode(data)
@@ -31,36 +33,50 @@ class BouncerServerClientProtocol(Connection):
             if verb == "QUIT":
                 pass
             elif verb == "PASS":
-                self.username, self.password = message.split(" ")[0].split(
-                    ':')
-            else:
-                if self.forward:
-                    self.forward(line)
-            if self.username and self.password and self.forward is None:
-                if self.authenticate(self.username, self.password) is None:
+                access_token = message.split(" ")[0]
+                self.network = self.get_network(access_token)
+                if self.network is None:
                     logger.debug(
-                        'Client authentication failed: %s, %s', self.username,
-                        self.password)
+                        'Client authentiacation failed for token: {}'.format(
+                            access_token))
+                    self.unregister_client(self.network.id, self)
                     self.transport.write('Authentication failed')
                     self.transport.close()
+            elif self.forward:
+                self.forward(line)
+            if self.forward is None:
                 self.forward = self.get_network_handle(
-                    self.username, self.password, self)
+                    self.network, self)
 
     def connection_lost(self, exc):
+        self.unregister_client(self.network.id, self)
         logger.debug('Client connection lost: %s, %s',
                      self.username, self.network)
+
+    def get_network(self, access_token):
+        return session.query(NetworkModel).filter(
+            NetworkModel.access_token == access_token).first()
+
+    def __str__(self):
+        return '<BouncerClientConnection {}:{}>'.format(
+            self.host, self.port)
+
+    def __repr__(self):
+        return self.__str__()
 
 
 class Bouncer(object):
 
-    def __init__(self):
+    def __init__(self, session):
         self.networks = {}
         self.clients = {}
+        self.session = session
 
     def start(self, host='127.0.0.1', port=9000):
         loop = asyncio.get_event_loop()
         coro = loop.create_server(
-            lambda: BouncerServerClientProtocol(self.get_network_handle),
+            lambda: BouncerServerClientProtocol(self.get_network_handle,
+                                                self.unregister_client),
             host, port)
         logger.info('Listening on {}:{}'.format(host, port))
         bouncer_server = loop.run_until_complete(coro)
@@ -72,72 +88,69 @@ class Bouncer(object):
         loop.run_until_complete(bouncer_server.wait_closed())
         loop.close()
 
-    def get_network_handle(self, username, password, client):
-        network_data = network_store.get('{}:{}'.format(username, password))
-        if network_data is None:
-            raise
-        key = '{}:{}'.format(username, network_data['name'])
-        network = self.networks.get(key)
-        if network is None:
-            logger.debug(
-                'New network connection: %s, %s, %s', username,
-                network_data['name'], network_data
-            )
-            loop = asyncio.get_event_loop()
-            coro = loop.create_connection(
-                lambda: Network(
-                    username, network_data['name'], network_data['nickname'],
-                    network_data['username'], network_data['password'],
-                    register=self.register_network),
-                network_data['hostname'], network_data['port'])
-            asyncio.async(coro)
-        else:
-            logger.debug('Reusing network connection: %s, %s, %s',
-                         username, network_data['name'], network_data)
-            joining_messages = network.get_joining_messages()
-            client.send(*[joining_messages])
-
-            # FIXME
-            for line in joining_messages.splitlines():
-                if 'JOIN' in line:
-                    words = line.split(' ')
-                    network.send('NAMES', words[2][1:])
-
-        def forward(line):
-            network = self.networks.get(key)
-            if network:
+    def get_network_handle(self, network, client):
+        try:
+            key = network.id
+            network_conn = self.networks.get(key)
+            if network_conn is None:
+                user = session.query(User).get(network.user_id)
                 logger.debug(
-                    'Forwarding {}->{}\n %s'.format(username, network), line)
-                network.send(*[line])
+                    'New network connection: {}-{}'.format(
+                        user.username, network.name)
+                )
+                loop = asyncio.get_event_loop()
+                coro = loop.create_connection(
+                    lambda: Network(
+                        user.username, network.id, network.name,
+                        network.nickname, network.username, network.password,
+                        register=self.register_network),
+                    network.hostname, network.port)
+                asyncio.async(coro)
+            else:
+                logger.debug('Reusing network connection: {}'.format(
+                    network_conn))
+                joining_messages = network_conn.get_joining_messages()
+                client.send(*[joining_messages])
 
-        self.register_client(username, password, client)
-        return forward
+                # FIXME
+                for line in joining_messages.splitlines():
+                    if 'JOIN' in line:
+                        words = line.split(' ')
+                        network_conn.send('NAMES', words[2][1:])
 
-    def register_network(self, username, network_name, network):
-        logger.debug('Registering new network: %s, %s',
-                     username, network_name)
-        key = '{}:{}'.format(username, network_name)
-        _network = self.networks.get(key)
-        if _network:
-            _network.transport.close()
+            def forward(line):
+                network_conn = self.networks.get(key)
+                if network_conn:
+                    logger.debug(
+                        'Forwarding {}\t {}'.format(network_conn, line))
+                    network_conn.send(*[line])
+
+            self.register_client(key, client)
+            return forward
+        except Exception as e:
+            logger.error('get_network_handle error: {}'.format(e),
+                         exc_info=True)
+
+    def register_network(self, network_id, network):
+        logger.debug('Registering new network: {}'.format(network_id))
+        key = network_id
+        network_conn = self.networks.get(key)
+        if network_conn:
+            network_conn.transport.close()
             del self.networks[key]
         self.networks[key] = network
         logger.debug('Networks: %s', self.networks)
 
         def dispatch(data):
             clients = self.clients.get(key) or []
-            logger.debug('Dispatch to clients: %s, %s\n%s',
+            logger.debug('Dispatch to clients: %s, %s\t%s',
                          key, clients, data.decode())
             for client in clients:
                 client.transport.write(data)
         return dispatch
 
-    def register_client(self, username, password, client):
-        network_data = network_store.get(
-            '{}:{}'.format(username, password))
-        if network_data is None:
-            return
-        key = '{}:{}'.format(username, network_data['name'])
+    def register_client(self, network_id, client):
+        key = network_id
         clients = self.clients.get(key)
         if clients is None:
             clients = set()
@@ -145,9 +158,18 @@ class Bouncer(object):
         clients.add(client)
         logger.debug('Registered new client: %s, %s', key, clients)
 
+    def unregister_client(self, network_id, client):
+        key = network_id
+        clients = self.clients.get(key)
+        logger.debug('Unregistering client: {}'.format(client))
+        try:
+            clients.remove(client)
+        except KeyError:
+            pass
+
 if __name__ == '__main__':
-    import logging
-    from config.logging import load_config
-    load_config()
-    bouncer = Bouncer()
+    session = get_session()
+    logging.config.dictConfig(settings.LOGGING_CONF)
+    bouncer = Bouncer(session)
     bouncer.start()
+

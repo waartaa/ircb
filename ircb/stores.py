@@ -24,23 +24,6 @@ class AuthStore(object):
         return self._data.get('{}:{}'.format(username, password))
 
 
-class NetworkStore(object):
-
-    def __init__(self):
-        try:
-            f = open(os.path.join(os.path.dirname(__file__),
-                                  'config/networks.json'))
-            s = f.read()
-            self._data = json.loads(s)
-            logger.debug('Loaded networks data')
-        except:
-            logger.error('Unable to load networks data')
-            sys.exit(1)
-
-    def get(self, key):
-        return self._data.get(key)
-
-
 class NetworkMessageStore(object):
 
     def __init__(self):
@@ -77,6 +60,3 @@ class NetworkMessageStore(object):
         for key, value in self._data.items():
             data.append(value)
         return '\r\n'.join(data)
-
-auth_store = AuthStore()
-network_store = NetworkStore()
