@@ -4,6 +4,7 @@ from flask.ext.script import Command, Manager, Option
 from ircb.web.app import app
 from ircb.models import get_session, User
 from ircb.storeclient import NetworkStore
+from ircb.lib.async import coroutinize
 import ircb.stores
 
 manager = Manager(app)
@@ -36,28 +37,23 @@ class CreateNetworkCommand(Command):
         Option('--usermode', '-m', dest='usermode', default='0'),
     )
 
+    @coroutinize
     def run(self, user, name, nick, host, port, realname, username, password,
             usermode):
-        loop = asyncio.get_event_loop()
-
-        @asyncio.coroutine
-        def create_network():
-            network = yield from NetworkStore.create(
-                dict(
-                    user=user,
-                    name=name,
-                    nickname=nick,
-                    hostname=host,
-                    port=port,
-                    realname=realname,
-                    username=username,
-                    password=password,
-                    usermode=usermode
-                )
+        network = yield from NetworkStore.create(
+            dict(
+                user=user,
+                name=name,
+                nickname=nick,
+                hostname=host,
+                port=port,
+                realname=realname,
+                username=username,
+                password=password,
+                usermode=usermode
             )
-            print(network.access_token)
-        loop.run_until_complete(create_network())
-        loop.close()
+        )
+        print(network.access_token)
 
 
 if __name__ == '__main__':
