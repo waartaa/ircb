@@ -1,6 +1,8 @@
+import asyncio
 import logging
 from connection import Connection
 from ircb.stores import NetworkMessageStore
+from ircb.storeclient import NetworkStore
 
 logger = logging.getLogger('network')
 
@@ -21,6 +23,10 @@ class Network(Connection):
         self.message_store = NetworkMessageStore()
 
     def connection_made(self, transport):
+        asyncio.Task(self.handle_connection_made(transport))
+
+    @asyncio.coroutine
+    def handle_connection_made(self, transport):
         logger.debug('Network connected: %s, %s, %s', self.bouncer_username,
                      self.name, self.nickname)
         self.transport = transport
@@ -30,6 +36,26 @@ class Network(Connection):
         self.send(
             'USER', self.username, '*', '*',
             ':{}'.format(self.realname))
+        yield from NetworkStore.update(
+            dict(
+                filter=('id', self.id),
+                update={
+                    'status': '1'
+                }
+            )
+        )
+
+    def connection_lost(self, exc):
+        logger.debug('Network disconnected: %s, %s, %s', self.bouncer_username,
+                     self.name, self.nickname)
+        yield from NetworkStore.update(
+            dict(
+                filter=('id', self.id),
+                update={
+                    'status': '3'
+                }
+            )
+        )
 
     def data_received(self, data):
         logger.debug('Data received: %s', data.decode())

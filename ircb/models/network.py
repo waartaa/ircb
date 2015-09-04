@@ -12,10 +12,10 @@ from ircb.models.user import User
 from ircb.config import settings
 
 NETWORK_STATUS_TYPES = (
-    (0, 'Connecting'),
-    (1, 'Connected'),
-    (2, 'Disconnecting'),
-    (3, 'Disconnected')
+    ('0', 'Connecting'),
+    ('1', 'Connected'),
+    ('2', 'Disconnecting'),
+    ('3', 'Disconnected')
 )
 session = get_session()
 

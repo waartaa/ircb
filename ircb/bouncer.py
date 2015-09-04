@@ -3,8 +3,10 @@ import logging
 import logging.config
 from network import Network
 from connection import Connection
+import ircb.stores
 from ircb.models import get_session, Network as NetworkModel, User
 from ircb.config import settings
+from ircb.storeclient import NetworkStore
 
 
 logger = logging.getLogger('bouncer')
@@ -26,6 +28,10 @@ class BouncerServerClientProtocol(Connection):
             'socket').getpeername()
 
     def data_received(self, data):
+        asyncio.Task(self.handle_data_received(data))
+
+    @asyncio.coroutine
+    def handle_data_received(self, data):
         data = self.decode(data)
         logger.debug('Received client data: %s', data)
         for line in data.rstrip().splitlines():
@@ -44,8 +50,9 @@ class BouncerServerClientProtocol(Connection):
                     self.transport.close()
             elif self.forward:
                 self.forward(line)
+
             if self.forward is None:
-                self.forward = self.get_network_handle(
+                self.forward = yield from self.get_network_handle(
                     self.network, self)
 
     def connection_lost(self, exc):
@@ -86,7 +93,6 @@ class Bouncer(object):
             pass
         bouncer_server.close()
         loop.run_until_complete(bouncer_server.wait_closed())
-        loop.close()
 
     def get_network_handle(self, network, client):
         try:
@@ -99,11 +105,21 @@ class Bouncer(object):
                         user.username, network.name)
                 )
                 loop = asyncio.get_event_loop()
+                yield from NetworkStore.update(
+                    dict(
+                        filter=('id', network.id),
+                        update={
+                            'status': '0'
+                        })
+                )
                 coro = loop.create_connection(
                     lambda: Network(
                         user.username, network.id, network.name,
                         network.nickname, network.username, network.password,
-                        register=self.register_network),
+                        register=self.register_network,
+                        usermode=network.usermode,
+                        realname=network.realname
+                    ),
                     network.hostname, network.port)
                 asyncio.async(coro)
             else:
@@ -169,6 +185,7 @@ class Bouncer(object):
 
 if __name__ == '__main__':
     session = get_session()
+    ircb.stores.initialize()
     logging.config.dictConfig(settings.LOGGING_CONF)
     bouncer = Bouncer(session)
     bouncer.start()
