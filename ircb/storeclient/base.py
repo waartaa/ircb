@@ -23,8 +23,9 @@ class BaseStore(object):
         return result
 
     @classmethod
-    def delete(cls, id):
-        raise NotImplementedError
+    def delete(cls, data):
+        result = yield from cls._delete(data)
+        return result
 
     @classmethod
     def _create(cls, data, async=False):
@@ -51,6 +52,20 @@ class BaseStore(object):
                 future.set_result(data)
         dispatcher.register(callback, signal=cls.UPDATED_SIGNAL)
         dispatcher.send(cls.UPDATE_SIGNAL, data, taskid=task_id)
+
+        result = yield from future
+        return result
+
+    @classmethod
+    def _delete(cls, data):
+        task_id = cls.get_task_id(data)
+        future = asyncio.Future()
+
+        def callback(signal, data, taskid=None):
+            if taskid == task_id:
+                future.set_result(data)
+        dispatcher.register(callback, signal=cls.DELETED_SIGNAL)
+        dispatcher.send(cls.DELETE_SIGNAL, data, taskid=task_id)
 
         result = yield from future
         return result
