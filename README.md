@@ -10,7 +10,9 @@ A versatile IRC bouncer.
   it from your distro's repositories
 - Create a Python3 virtualenv: ``mkvirtualenv ircb --no-site-packager -p /usr/bin/python3``
 - Switch to your virtualenv: ``workon ircb``
-- Install dependencies: ``pip install -r requirements.txt``
+- Install dependencies: ``pip install -r requirements.txt``. Incase the
+  installation is not done inside an environment, then install the dependencies
+  using ``pip3 install -r requirements.txt``
 - Install ircb in development mode: ``python setup.py develop``
 - Copy and extend ``ircb/config/default_settings.py``, as needed, to a custom
   location. say, ``/etc/ircb/settings.py``.
