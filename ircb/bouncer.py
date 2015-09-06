@@ -6,7 +6,7 @@ from connection import Connection
 import ircb.stores
 from ircb.models import get_session, Network as NetworkModel, User
 from ircb.config import settings
-from ircb.storeclient import NetworkStore
+from ircb.storeclient import NetworkStore, ClientStore
 
 
 logger = logging.getLogger('bouncer')
@@ -20,6 +20,7 @@ class BouncerServerClientProtocol(Connection):
         self.get_network_handle = get_network_handle
         self.unregister_client = unregister_client
         self.host, self.port = None, None
+        self.client_id = None
 
     def connection_made(self, transport):
         logger.debug('New client connection received')
@@ -48,6 +49,13 @@ class BouncerServerClientProtocol(Connection):
                     self.unregister_client(self.network.id, self)
                     self.transport.write('Authentication failed')
                     self.transport.close()
+                else:
+                    client = yield from ClientStore.create({
+                        'socket': '{}:{}'.format(self.host, self.port),
+                        'network_id': self.network.id,
+                        'user_id': self.network.user_id
+                    })
+                    self.client_id = client.id
             elif self.forward:
                 self.forward(line)
 
@@ -57,8 +65,9 @@ class BouncerServerClientProtocol(Connection):
 
     def connection_lost(self, exc):
         self.unregister_client(self.network.id, self)
-        logger.debug('Client connection lost: %s, %s',
-                     self.username, self.network)
+        logger.debug('Client connection lost: {}'.format(self.network))
+        if self.client_id:
+            asyncio.Task(ClientStore.delete({'id': self.client_id}))
 
     def get_network(self, access_token):
         return session.query(NetworkModel).filter(
@@ -184,9 +193,9 @@ class Bouncer(object):
             pass
 
 if __name__ == '__main__':
+    logging.config.dictConfig(settings.LOGGING_CONF)
     session = get_session()
     ircb.stores.initialize()
-    logging.config.dictConfig(settings.LOGGING_CONF)
     bouncer = Bouncer(session)
     bouncer.start()
 

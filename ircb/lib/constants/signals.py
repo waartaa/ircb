@@ -13,3 +13,9 @@ STORE_NETWORK_UPDATE = 'store-network-update'
 STORE_NETWORK_UPDATED = 'store-network-updated'
 STORE_NETWORK_DELETE = 'store-network-delete'
 STORE_NETWORK_DELETED = 'store-network-deleted'
+
+# Client store
+STORE_CLIENT_CREATE = 'store-client-create'
+STORE_CLIENT_CREATED = 'store-client-created'
+STORE_CLIENT_DELETE = 'store-client-delete'
+STORE_CLIENT_DELETED = 'store-client-deleted'
