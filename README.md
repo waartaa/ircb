@@ -46,4 +46,4 @@ python3 ircb/bouncer.py
 
 Now, you should be able to connect to ``ircb`` from your IRC client at:
 - host/port: ``localhost/9000``
-- server password: <your network access token>``
+- server password: ``<your network access token>``
