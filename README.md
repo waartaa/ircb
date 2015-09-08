@@ -7,7 +7,6 @@ A versatile IRC bouncer.
 - Install Python3 and Python3 development packages for your distro, if not already there.
   In Fedora, it'd be: ``sudo dnf install -y python3 python3-devel``
 - Install dependencies: ``pip3 install -r requirements.txt``
-- Install ircb in development mode: ``python setup.py develop``
 - Copy and extend ``ircb/config/default_settings.py``, as needed, to a custom
   location. say, ``/etc/ircb/settings.py``.
 - [OPTIONAL] ``export IRCB_SETTINGS=<path to your custom settings file>``
