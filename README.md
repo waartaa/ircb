@@ -9,10 +9,7 @@ A versatile IRC bouncer.
 If you want to set up `ircb` for development purpose. Follow the given steps
 
 - Install Python3 and Python3 development packages for your distro, if not already there. In Fedora, it'd be:  
-``sudo dnf install -y python3 python3-devel python3-pip``
-
-- Install virtualenvwrapper:  
-``sudo pip3 install virtualenvwrapper``
+``sudo dnf install -y python3 python3-devel python3-pip python-virtualenvwrapper``
 
 - Create a Python3 virtualenv:  
 ``mkvirtualenv ircb --no-site-packager -p /usr/bin/python3``
