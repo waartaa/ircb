@@ -6,6 +6,9 @@ try:
 except:
     from distutils.core import setup, find_packages
 
+with open('requirements.txt') as f:
+    requirements = f.read().spitlines()
+
 setup(
     name='ircb',
     version='0.0.1',
@@ -15,6 +18,7 @@ setup(
     author='Ratnadeep Debnath',
     author_email='rtnpro@gmail.com',
     license='MIT',
+    install_requires=requirements,
     packages=find_packages(),
     classifiers=[
         'Development Status :: 3 - Alpha',
