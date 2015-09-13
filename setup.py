@@ -14,7 +14,7 @@ setup(
     version='0.0.1',
     description='A IRC bouncer',
     long_description=''.join(open('README.md').readlines()),
-    keywords='some, keywords',
+    keywords='irc, client, bouncer',
     author='Ratnadeep Debnath',
     author_email='rtnpro@gmail.com',
     license='MIT',
