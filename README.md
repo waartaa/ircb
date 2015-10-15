@@ -12,7 +12,7 @@ If you want to set up `ircb` for development purpose. Follow the given steps
 ``sudo dnf install -y python3 python3-devel python3-pip python-virtualenvwrapper``
 
 - Create a Python3 virtualenv:  
-``mkvirtualenv ircb --no-site-packager -p /usr/bin/python3``
+``mkvirtualenv ircb --no-site-packages -p /usr/bin/python3``
 
 - Activate the virtualenv `ircb`:  
 ``workon ircb``
