@@ -141,7 +141,7 @@ class Bouncer(object):
                 for line in joining_messages.splitlines():
                     if 'JOIN' in line:
                         words = line.split(' ')
-                        network_conn.send('NAMES', words[2][1:])
+                        network_conn.send('NAMES', words[2])
 
             def forward(line):
                 network_conn = self.networks.get(key)
