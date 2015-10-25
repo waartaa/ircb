@@ -7,7 +7,9 @@ from ircb.lib.constants.signals import (STORE_CHANNEL_CREATE,
                                         STORE_CHANNEL_UPDATE,
                                         STORE_CHANNEL_UPDATED,
                                         STORE_CHANNEL_DELETE,
-                                        STORE_CHANNEL_DELETED)
+                                        STORE_CHANNEL_DELETED,
+                                        STORE_CHANNEL_CREATE_OR_UPDATE,
+                                        STORE_CHANNEL_CREATE_OR_UPDATE_ERROR)
 from ircb.stores.base import BaseStore
 
 session = get_session()
@@ -22,6 +24,8 @@ class ChannelStore(BaseStore):
     UPDATED_SIGNAL = STORE_CHANNEL_UPDATED
     DELETE_SIGNAL = STORE_CHANNEL_DELETE
     DELETED_SIGNAL = STORE_CHANNEL_DELETED
+    CREATE_OR_UPDATE = STORE_CHANNEL_CREATE_OR_UPDATE
+    CREATE_OR_UPDATE_ERROR = STORE_CHANNEL_CREATE_OR_UPDATE_ERROR
 
     @classmethod
     def get(cls, id):
@@ -51,3 +55,23 @@ class ChannelStore(BaseStore):
         channel = session.query(Channel).get(id)
         session.delete(channel)
         session.commit()
+
+    @classmethod
+    def create_or_update(cls, channel, network_id, password=None, status=0):
+        channel_obj = session.query(Channel).filter(
+            Channel.network_id == network_id, Channel.name == channel).first()
+        if channel_obj:
+            if password is not None:
+                channel_obj.password = password
+            channel_obj.status = status
+            action = 'update'
+        else:
+            network = session.query(Network).get(network_id)
+            channel_obj = Channel(name=channel, network_id=network_id,
+                                  user_id=network.user_id,
+                                  password=password or '',
+                                  status=status)
+            action = 'create'
+        session.add(channel_obj)
+        session.commit()
+        return channel_obj, action

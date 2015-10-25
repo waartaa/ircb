@@ -23,6 +23,8 @@ STORE_CHANNEL_UPDATE = 'store-channel-update'
 STORE_CHANNEL_UPDATED = 'store-channel-updated'
 STORE_CHANNEL_DELETE = 'store-channel-delete'
 STORE_CHANNEL_DELETED = 'store-channel-deleted'
+STORE_CHANNEL_CREATE_OR_UPDATE = 'store-channel-create-or-update'
+STORE_CHANNEL_CREATE_OR_UPDATE_ERROR = 'store-channel-create-or-update-error'
 
 # Client store
 STORE_CLIENT_CREATE = 'store-client-create'
