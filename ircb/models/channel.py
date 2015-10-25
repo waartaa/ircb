@@ -10,10 +10,10 @@ from ircb.config import settings
 from ircb.models.lib import Base
 
 CHANNEL_STATUS_TYPES = (
-    (0, 'Connecting'),
-    (1, 'Connected'),
-    (2, 'Disconnecting'),
-    (3, 'Disconnected')
+    ('0', 'Connecting'),
+    ('1', 'Connected'),
+    ('2', 'Disconnecting'),
+    ('3', 'Disconnected')
 )
 
 
@@ -38,4 +38,3 @@ class Channel(Base):
     # timestamps
     created = Column(DateTime, default=datetime.datetime.utcnow)
     last_updated = Column(DateTime, default=datetime.datetime.utcnow)
-
