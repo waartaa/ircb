@@ -11,6 +11,7 @@ class BaseStore(object):
     UPDATED_SIGNAL = None
     DELETE_SIGNAL = None
     DELETED_SIGNAL = None
+    CREATE_OR_UPDATE_SIGNAL = None
 
     @classmethod
     def create(cls, data, async=False, timeout=10):
@@ -25,6 +26,11 @@ class BaseStore(object):
     @classmethod
     def delete(cls, data):
         result = yield from cls._delete(data)
+        return result
+
+    @classmethod
+    def create_or_update(cls, data):
+        result = yield from cls._create_or_update(data)
         return result
 
     @classmethod
@@ -69,6 +75,22 @@ class BaseStore(object):
 
         result = yield from future
         return result
+
+    @classmethod
+    def _create_or_update(cls, data, async=False):
+        task_id = cls.get_task_id(data)
+        fut = asyncio.Future()
+
+        def callback(signal, data, taskid=None):
+            if taskid == task_id:
+                fut.set_result(data)
+
+        dispatcher.register(callback, signal=cls.CREATED_SIGNAL)
+        dispatcher.register(callback, signal=cls.UPDATED_SIGNAL)
+        dispatcher.send(cls.CREATE_OR_UPDATE_SIGNAL, data, taskid=task_id)
+
+        result = yield from fut
+        return fut.result()
 
     @classmethod
     def get_task_id(self, data):
