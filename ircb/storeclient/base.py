@@ -14,6 +14,11 @@ class BaseStore(object):
     CREATE_OR_UPDATE_SIGNAL = None
 
     @classmethod
+    def get(cls, data):
+        result = yield from cls._get(data)
+        return result
+
+    @classmethod
     def create(cls, data, async=False, timeout=10):
         result = yield from cls._create(data, async)
         return result
@@ -32,6 +37,21 @@ class BaseStore(object):
     def create_or_update(cls, data):
         result = yield from cls._create_or_update(data)
         return result
+
+    @classmethod
+    def _get(cls, data):
+        task_id = cls.get_task_id(data)
+        fut = asyncio.Future()
+
+        def callback(signal, data, taskid=None):
+            if taskid == task_id:
+                fut.set_result(data)
+
+        dispatcher.register(callback, signal=cls.GOT_SIGNAL)
+        dispatcher.send(cls.GET_SIGNAL, data, taskid=task_id)
+
+        result = yield from fut
+        return fut.result()
 
     @classmethod
     def _create(cls, data, async=False):
