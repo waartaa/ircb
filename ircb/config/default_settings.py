@@ -33,6 +33,11 @@ LOGGING_CONF = dict(
             "level": "DEBUG",
             "propagate": False,
             "handlers": ["console"],
+        },
+        dispatcher={
+            "level": "DEBUG",
+            "propagate": False,
+            "handlers": ["console"],
         }
     ),
 )

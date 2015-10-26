@@ -3,8 +3,10 @@ import logging
 import logging.config
 from network import Network
 from connection import Connection
+import ircb.stores
 from ircb.models import get_session, Network as NetworkModel, User
 from ircb.config import settings
+from ircb.storeclient import NetworkStore, ClientStore, ChannelStore
 
 
 logger = logging.getLogger('bouncer')
@@ -18,6 +20,7 @@ class BouncerServerClientProtocol(Connection):
         self.get_network_handle = get_network_handle
         self.unregister_client = unregister_client
         self.host, self.port = None, None
+        self.client_id = None
 
     def connection_made(self, transport):
         logger.debug('New client connection received')
@@ -26,6 +29,10 @@ class BouncerServerClientProtocol(Connection):
             'socket').getpeername()
 
     def data_received(self, data):
+        asyncio.Task(self.handle_data_received(data))
+
+    @asyncio.coroutine
+    def handle_data_received(self, data):
         data = self.decode(data)
         logger.debug('Received client data: %s', data)
         for line in data.rstrip().splitlines():
@@ -42,16 +49,25 @@ class BouncerServerClientProtocol(Connection):
                     self.unregister_client(self.network.id, self)
                     self.transport.write('Authentication failed')
                     self.transport.close()
+                else:
+                    client = yield from ClientStore.create({
+                        'socket': '{}:{}'.format(self.host, self.port),
+                        'network_id': self.network.id,
+                        'user_id': self.network.user_id
+                    })
+                    self.client_id = client.id
             elif self.forward:
                 self.forward(line)
+
             if self.forward is None:
-                self.forward = self.get_network_handle(
+                self.forward = yield from self.get_network_handle(
                     self.network, self)
 
     def connection_lost(self, exc):
         self.unregister_client(self.network.id, self)
-        logger.debug('Client connection lost: %s, %s',
-                     self.username, self.network)
+        logger.debug('Client connection lost: {}'.format(self.network))
+        if self.client_id:
+            asyncio.Task(ClientStore.delete({'id': self.client_id}))
 
     def get_network(self, access_token):
         return session.query(NetworkModel).filter(
@@ -86,7 +102,6 @@ class Bouncer(object):
             pass
         bouncer_server.close()
         loop.run_until_complete(bouncer_server.wait_closed())
-        loop.close()
 
     def get_network_handle(self, network, client):
         try:
@@ -99,24 +114,50 @@ class Bouncer(object):
                         user.username, network.name)
                 )
                 loop = asyncio.get_event_loop()
+                yield from NetworkStore.update(
+                    dict(
+                        filter=('id', network.id),
+                        update={
+                            'status': '0'
+                        })
+                )
                 coro = loop.create_connection(
                     lambda: Network(
                         user.username, network.id, network.name,
                         network.nickname, network.username, network.password,
-                        register=self.register_network),
+                        register=self.register_network,
+                        usermode=network.usermode,
+                        realname=network.realname
+                    ),
                     network.hostname, network.port)
                 asyncio.async(coro)
             else:
+                # FIXME: Discard get_joining_messages() and generate joining
+                #        messages dynamically, including channel join messages
+                #        so that IRC clients can load the channels.
                 logger.debug('Reusing network connection: {}'.format(
                     network_conn))
                 joining_messages = network_conn.get_joining_messages()
                 client.send(*[joining_messages])
+                joining_messages_list = [
+                    ':* 001 {nick} :You are now connected to {network}'.format(
+                        nick='rtnpro_', network=network.name),
+                    ':* 251 {nick} : '.format(nick='rtnpro_')
+                ]
+                connected_channels = yield from ChannelStore.get({
+                    'query': dict(
+                        network_id=key,
+                        status='1'
+                    )
+                })
+                for channel in connected_channels:
+                    # joining_messages_list.append(
+                    #    ':{nick}_!* JOIN {channel}'.format(
+                    #        nick=network.nickanme,
+                    #        channel=channel.name))
+                    network_conn.send('NAMES', channel.name)
 
-                # FIXME
-                for line in joining_messages.splitlines():
-                    if 'JOIN' in line:
-                        words = line.split(' ')
-                        network_conn.send('NAMES', words[2][1:])
+                # client.send(*['\r\n'.join(joining_messages_list)])
 
             def forward(line):
                 network_conn = self.networks.get(key)
@@ -168,8 +209,9 @@ class Bouncer(object):
             pass
 
 if __name__ == '__main__':
-    session = get_session()
     logging.config.dictConfig(settings.LOGGING_CONF)
+    session = get_session()
+    ircb.stores.initialize()
     bouncer = Bouncer(session)
     bouncer.start()
 

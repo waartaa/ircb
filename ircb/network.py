@@ -1,6 +1,9 @@
+import asyncio
 import logging
 from connection import Connection
 from ircb.stores import NetworkMessageStore
+from ircb.storeclient import NetworkStore
+from ircb.lib.irc import IRCCommandHandler, IRCReplyHandler
 
 logger = logging.getLogger('network')
 
@@ -19,8 +22,14 @@ class Network(Connection):
         self.usermode = usermode
         self.dispatch = register(self.id, self)
         self.message_store = NetworkMessageStore()
+        self.irc_command_handler = IRCCommandHandler(self.id, self.nickname)
+        self.irc_reply_handler = IRCReplyHandler(self.id, self.nickname)
 
     def connection_made(self, transport):
+        asyncio.Task(self.handle_connection_made(transport))
+
+    @asyncio.coroutine
+    def handle_connection_made(self, transport):
         logger.debug('Network connected: %s, %s, %s', self.bouncer_username,
                      self.name, self.nickname)
         self.transport = transport
@@ -30,17 +39,39 @@ class Network(Connection):
         self.send(
             'USER', self.username, '*', '*',
             ':{}'.format(self.realname))
+        yield from NetworkStore.update(
+            dict(
+                filter=('id', self.id),
+                update={
+                    'status': '1'
+                }
+            )
+        )
+
+    def connection_lost(self, exc):
+        logger.debug('Network disconnected: %s, %s, %s', self.bouncer_username,
+                     self.name, self.nickname)
+        yield from NetworkStore.update(
+            dict(
+                filter=('id', self.id),
+                update={
+                    'status': '3'
+                }
+            )
+        )
 
     def data_received(self, data):
         logger.debug('Data received: %s', data.decode())
         self.dispatch(data)
         self.message_store.update(self.decode(data))
+        asyncio.Task(self.irc_reply_handler.handle(self.decode(data)))
 
     def get_joining_messages(self):
         logger.debug('Joining messages: %s', self.message_store.get_all())
         return self.message_store.get_all()
 
     def send(self, *args):
+        asyncio.Task(self.irc_command_handler.handle(*args))
         super().send(*args)
 
     def __str__(self):
@@ -49,4 +80,3 @@ class Network(Connection):
 
     def __repr__(self):
         return self.__str__()
-

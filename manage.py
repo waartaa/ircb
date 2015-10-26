@@ -1,7 +1,11 @@
+import asyncio
 from flask.ext.script import Command, Manager, Option
 
 from ircb.web.app import app
-from ircb.models import create_tables, get_session, User, Network
+from ircb.models import get_session, User
+from ircb.storeclient import NetworkStore
+from ircb.lib.async import coroutinize
+import ircb.stores
 
 manager = Manager(app)
 session = get_session()
@@ -33,22 +37,27 @@ class CreateNetworkCommand(Command):
         Option('--usermode', '-m', dest='usermode', default='0'),
     )
 
+    @coroutinize
     def run(self, user, name, nick, host, port, realname, username, password,
             usermode):
-        user = session.query(User).filter(User.username == user).first()
-        if user is None:
-            raise
-        network = Network(name=name, nickname=nick, hostname=host, port=port,
-                          realname=realname, username=username,
-                          password=password, usermode=usermode,
-                          user_id=user.id)
-        session.add(network)
-        session.commit()
+        network = yield from NetworkStore.create(
+            dict(
+                user=user,
+                name=name,
+                nickname=nick,
+                hostname=host,
+                port=port,
+                realname=realname,
+                username=username,
+                password=password,
+                usermode=usermode
+            )
+        )
         print(network.access_token)
 
 
 if __name__ == '__main__':
-    create_tables()
+    ircb.stores.initialize()
     manager.add_command('createuser', CreateUserCommand())
     manager.add_command('createnetwork', CreateNetworkCommand())
     manager.run()
