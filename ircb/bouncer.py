@@ -6,7 +6,7 @@ from connection import Connection
 import ircb.stores
 from ircb.models import get_session, Network as NetworkModel, User
 from ircb.config import settings
-from ircb.storeclient import NetworkStore, ClientStore
+from ircb.storeclient import NetworkStore, ClientStore, ChannelStore
 
 
 logger = logging.getLogger('bouncer')
@@ -132,16 +132,32 @@ class Bouncer(object):
                     network.hostname, network.port)
                 asyncio.async(coro)
             else:
+                # FIXME: Discard get_joining_messages() and generate joining
+                #        messages dynamically, including channel join messages
+                #        so that IRC clients can load the channels.
                 logger.debug('Reusing network connection: {}'.format(
                     network_conn))
                 joining_messages = network_conn.get_joining_messages()
                 client.send(*[joining_messages])
+                joining_messages_list = [
+                    ':* 001 {nick} :You are now connected to {network}'.format(
+                        nick='rtnpro_', network=network.name),
+                    ':* 251 {nick} : '.format(nick='rtnpro_')
+                ]
+                connected_channels = yield from ChannelStore.get({
+                    'query': dict(
+                        network_id=key,
+                        status='1'
+                    )
+                })
+                for channel in connected_channels:
+                    # joining_messages_list.append(
+                    #    ':{nick}_!* JOIN {channel}'.format(
+                    #        nick=network.nickanme,
+                    #        channel=channel.name))
+                    network_conn.send('NAMES', channel.name)
 
-                # FIXME
-                for line in joining_messages.splitlines():
-                    if 'JOIN' in line:
-                        words = line.split(' ')
-                        network_conn.send('NAMES', words[2])
+                # client.send(*['\r\n'.join(joining_messages_list)])
 
             def forward(line):
                 network_conn = self.networks.get(key)
