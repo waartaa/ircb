@@ -4,7 +4,8 @@ import asyncio
 class Connection(asyncio.Protocol):
 
     def decode(self, line):
-        try: return line.decode()
+        try:
+            return line.decode()
         except UnicodeDecodeError:
             return line.decode("latin1")
 

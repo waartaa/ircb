@@ -1,12 +1,12 @@
 import asyncio
 import logging
 import logging.config
-from network import Network
 from connection import Connection
 import ircb.stores
 from ircb.models import get_session, Network as NetworkModel, User
 from ircb.config import settings
 from ircb.storeclient import NetworkStore, ClientStore, ChannelStore
+from ircb.irc import IrcbBot
 
 
 logger = logging.getLogger('bouncer')
@@ -14,10 +14,10 @@ logger = logging.getLogger('bouncer')
 
 class BouncerServerClientProtocol(Connection):
 
-    def __init__(self, get_network_handle, unregister_client):
+    def __init__(self, get_bot_handle, unregister_client):
         self.network = None
         self.forward = None
-        self.get_network_handle = get_network_handle
+        self.get_bot_handle = get_bot_handle
         self.unregister_client = unregister_client
         self.host, self.port = None, None
         self.client_id = None
@@ -60,7 +60,7 @@ class BouncerServerClientProtocol(Connection):
                 self.forward(line)
 
             if self.forward is None:
-                self.forward = yield from self.get_network_handle(
+                self.forward = yield from self.get_bot_handle(
                     self.network, self)
 
     def connection_lost(self, exc):
@@ -84,14 +84,14 @@ class BouncerServerClientProtocol(Connection):
 class Bouncer(object):
 
     def __init__(self, session):
-        self.networks = {}
+        self.bots = {}
         self.clients = {}
         self.session = session
 
     def start(self, host='127.0.0.1', port=9000):
         loop = asyncio.get_event_loop()
         coro = loop.create_server(
-            lambda: BouncerServerClientProtocol(self.get_network_handle,
+            lambda: BouncerServerClientProtocol(self.get_bot_handle,
                                                 self.unregister_client),
             host, port)
         logger.info('Listening on {}:{}'.format(host, port))
@@ -103,17 +103,17 @@ class Bouncer(object):
         bouncer_server.close()
         loop.run_until_complete(bouncer_server.wait_closed())
 
-    def get_network_handle(self, network, client):
+    def get_bot_handle(self, network, client):
         try:
             key = network.id
-            network_conn = self.networks.get(key)
-            if network_conn is None:
+            bot = self.bots.get(key)
+            self.register_client(key, client)
+            if bot is None:
                 user = session.query(User).get(network.user_id)
                 logger.debug(
-                    'New network connection: {}-{}'.format(
+                    'Creating new bot: {}-{}'.format(
                         user.username, network.name)
                 )
-                loop = asyncio.get_event_loop()
                 yield from NetworkStore.update(
                     dict(
                         filter=('id', network.id),
@@ -121,23 +121,25 @@ class Bouncer(object):
                             'status': '0'
                         })
                 )
-                coro = loop.create_connection(
-                    lambda: Network(
-                        user.username, network.id, network.name,
-                        network.nickname, network.username, network.password,
-                        register=self.register_network,
-                        usermode=network.usermode,
-                        realname=network.realname
-                    ),
-                    network.hostname, network.port)
-                asyncio.async(coro)
+                config = dict(
+                    id=network.id,
+                    name=network.name,
+                    userinfo=network.username,
+                    password=network.password,
+                    nick='rtnpro_',
+                    realname=network.realname,
+                    host=network.hostname,
+                    port=network.port
+                )
+                bot = IrcbBot(**config)
+                bot.run_in_loop()
+                self.register_bot(key, bot)
             else:
                 # FIXME: Discard get_joining_messages() and generate joining
                 #        messages dynamically, including channel join messages
                 #        so that IRC clients can load the channels.
-                logger.debug('Reusing network connection: {}'.format(
-                    network_conn))
-                joining_messages = network_conn.get_joining_messages()
+                logger.debug('Reusing existing bot: {}'.format(bot))
+                joining_messages = bot.get_joining_messages()
                 client.send(*[joining_messages])
                 joining_messages_list = [
                     ':* 001 {nick} :You are now connected to {network}'.format(
@@ -155,40 +157,32 @@ class Bouncer(object):
                     #    ':{nick}_!* JOIN {channel}'.format(
                     #        nick=network.nickanme,
                     #        channel=channel.name))
-                    network_conn.send('NAMES', channel.name)
+                    bot.raw('NAMES', channel.name)
 
                 # client.send(*['\r\n'.join(joining_messages_list)])
 
             def forward(line):
-                network_conn = self.networks.get(key)
-                if network_conn:
+                bot = self.bots.get(key)
+                if bot:
                     logger.debug(
-                        'Forwarding {}\t {}'.format(network_conn, line))
-                    network_conn.send(*[line])
+                        'Forwarding {}\t {}'.format(bot, line))
+                    bot.raw(line)
 
-            self.register_client(key, client)
             return forward
         except Exception as e:
-            logger.error('get_network_handle error: {}'.format(e),
+            logger.error('get_bot_handle error: {}'.format(e),
                          exc_info=True)
 
-    def register_network(self, network_id, network):
-        logger.debug('Registering new network: {}'.format(network_id))
+    def register_bot(self, network_id, bot):
+        logger.debug('Registering new bot: {}'.format(network_id))
         key = network_id
-        network_conn = self.networks.get(key)
-        if network_conn:
-            network_conn.transport.close()
-            del self.networks[key]
-        self.networks[key] = network
-        logger.debug('Networks: %s', self.networks)
-
-        def dispatch(data):
-            clients = self.clients.get(key) or []
-            logger.debug('Dispatch to clients: %s, %s\t%s',
-                         key, clients, data.decode())
-            for client in clients:
-                client.transport.write(data)
-        return dispatch
+        existing_bot = self.bots.get(key)
+        if existing_bot:
+            existing_bot.protocol.transport.close()
+            del self.bots[key]
+        bot.clients = self.clients.get(key, set())
+        self.bots[key] = bot
+        logger.debug('Bots: %s', self.bots)
 
     def register_client(self, network_id, client):
         key = network_id
@@ -214,4 +208,3 @@ if __name__ == '__main__':
     ircb.stores.initialize()
     bouncer = Bouncer(session)
     bouncer.start()
-

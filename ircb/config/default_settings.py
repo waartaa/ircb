@@ -38,6 +38,11 @@ LOGGING_CONF = dict(
             "level": "DEBUG",
             "propagate": False,
             "handlers": ["console"],
+        },
+        irc={
+            "level": "DEBUG",
+            "propagate": False,
+            "handlers": ["console"],
         }
     ),
 )
