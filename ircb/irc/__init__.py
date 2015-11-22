@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
+import re
 
 from irc3 import IrcBot, IrcConnection
 
@@ -32,6 +33,8 @@ class IrcbBot(IrcBot):
         ),
         connection=IrcbIrcConnection
     )
+    cmd_regex = re.compile(
+        r'(?P<cmd>[A-Z]+)(?:\s+(?P<args>[^\:]+))?(?:\:(?P<msg>.*))?')
 
     def __init__(self, *args, **kwargs):
         self.clients = None
@@ -54,35 +57,38 @@ class IrcbBot(IrcBot):
 
     def raw(self, message):
         """Handle raw message"""
-        words = message.split()
-        cmd = words[0]
+        m = self.cmd_regex.match(message)
+        cmd = args = msg = None
+        if m:
+            cmd, args, msg = m.groups()
+            args = args.strip() if args else args
 
         if cmd == 'PRIVMSG':
-            msg = ' '.join(words[2:])
             if msg.startswith('\x01') and msg.endswith('\x01'):
-                self.ctcp(words[1], msg.strip('\x01'))
+                self.ctcp(args, msg.strip('\x01'))
             else:
-                self.privmsg(words[1], ' '.join(words[2:]))
+                self.privmsg(args, msg)
         elif cmd == 'NOTICE':
-            msg = ' '.join(words[2:])
             if msg.startswith('\x01') and msg.endswith('\x01'):
-                self.ctcp_reply(words[1], msg.strip('\x01'))
+                self.ctcp_reply(args, msg.strip('\x01'))
             else:
-                self.notice(words[1], ' '.join(words[2:]))
+                self.notice(args, msg)
         elif cmd == 'MODE':
-            self.mode(words[1], words[2:])
+            _ = args.split()
+            self.mode(_[0], *_[1:])
         elif cmd == 'JOIN':
-            self.join(words[1], words[2] if len(words) > 2 else None)
+            _ = args.split()
+            self.join(_[0], _[1] if len(_) > 1 else None)
         elif cmd == 'PART':
-            self.part(words[1], ' '.join(words[2:]))
+            self.part(args, msg)
         elif cmd == 'TOPIC':
-            self.topic(words[1], ' '.join(words[2:]))
+            self.topic(args, msg)
         elif cmd == 'AWAY':
-            self.away(words[1], ' '.join(words[2:]))
+            self.away(args, msg)
         elif cmd == 'QUIT':
-            self.quit(' '.join(words[1:]))
+            self.quit(msg)
         elif cmd == 'NICK':
-            self.set_nick(words[1])
+            self.set_nick(args)
         else:
             self.send_line(message)
 
