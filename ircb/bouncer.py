@@ -126,7 +126,7 @@ class Bouncer(object):
                     name=network.name,
                     userinfo=network.username,
                     password=network.password,
-                    nick='rtnpro_',
+                    nick=network.nickname,
                     realname=network.realname,
                     host=network.hostname,
                     port=network.port
