@@ -157,7 +157,7 @@ class Bouncer(object):
                     #    ':{nick}_!* JOIN {channel}'.format(
                     #        nick=network.nickanme,
                     #        channel=channel.name))
-                    bot.raw('NAMES', channel.name)
+                    bot.raw('NAMES %s' % channel.name)
 
                 # client.send(*['\r\n'.join(joining_messages_list)])
 
