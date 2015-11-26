@@ -7,7 +7,7 @@ except:
     from distutils.core import setup, find_packages
 
 with open('requirements.txt') as f:
-    requirements = f.read().spitlines()
+    requirements = f.read().splitlines()
 
 setup(
     name='ircb',
