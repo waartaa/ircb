@@ -2,7 +2,7 @@ from .network import Network
 from .user import User
 from .channel import Channel
 from .client import Client
-from .lib import create_tables, get_session
+from .lib import create_tables, get_session, Base
 
 __all__ = [
     'Channel',
@@ -10,5 +10,6 @@ __all__ = [
     'Network',
     'User',
     'get_session',
-    'create_tables'
+    'create_tables',
+    'Base'
 ]
