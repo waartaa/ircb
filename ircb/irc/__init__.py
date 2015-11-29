@@ -1,18 +1,49 @@
 # -*- coding: utf-8 -*-
+import asyncio
 import logging
 import re
 
 from irc3 import IrcBot, IrcConnection
 
 from ircb.stores import NetworkMessageStore
+from ircb.storeclient import NetworkStore
 
 logger = logging.getLogger('irc')
 
 
 class IrcbIrcConnection(IrcConnection):
 
+    def connection_made(self, transport):
+        super().connection_made(transport)
+        asyncio.Task(self.handle_connection_made(transport))
+
     def data_received(self, data):
         super().data_received(data)
+
+    def connection_lost(self, exc):
+        yield from NetworkStore.update(
+            dict(
+                filter=('id', self.factory.config.id),
+                update={
+                    'status': '3'
+                }
+            )
+        )
+        super().connection_lost(exc)
+
+    @asyncio.coroutine
+    def handle_connection_made(self, transport):
+        logger.debug('Network connected: %s, %s, %s',
+                     self.factory.config.userinfo,
+                     self.factory.config.name, self.factory.config.nick)
+        yield from NetworkStore.update(
+            dict(
+                filter=('id', self.factory.config.id),
+                update={
+                    'status': '1'
+                }
+            )
+        )
 
 
 class IrcbBot(IrcBot):
