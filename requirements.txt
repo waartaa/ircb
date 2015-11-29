@@ -5,3 +5,4 @@ Flask-User==0.6.4
 SQLAlchemy==1.0.8
 SQLAlchemy-Utils==0.30.15
 irc3==0.8.3
+alembic==0.8.3
