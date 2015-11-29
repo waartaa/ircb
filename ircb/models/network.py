@@ -55,6 +55,14 @@ class Network(Base):
     current_nickname = Column(String(20), nullable=True)
     status = Column(ChoiceType(NETWORK_STATUS_TYPES))
 
+    # Remote socket info
+    rhost = Column(String(100), nullable=True)
+    rport = Column(Integer(), nullable=True)
+
+    # Local socket info
+    lhost = Column(String(100), nullable=True)
+    lport = Column(Integer(), nullable=True)
+
     # timestamps
     created = Column(DateTime, default=datetime.datetime.utcnow)
     last_updated = Column(DateTime, default=datetime.datetime.utcnow)
