@@ -25,7 +25,11 @@ class IrcbIrcConnection(IrcConnection):
             dict(
                 filter=('id', self.factory.config.id),
                 update={
-                    'status': '3'
+                    'status': '3',
+                    'lhost': None,
+                    'lport': None,
+                    'rhost': None,
+                    'rport': None
                 }
             )
         )
@@ -36,11 +40,18 @@ class IrcbIrcConnection(IrcConnection):
         logger.debug('Network connected: %s, %s, %s',
                      self.factory.config.userinfo,
                      self.factory.config.name, self.factory.config.nick)
+        socket = transport.get_extra_info('socket')
+        lhost, lport = socket.getsockname()
+        rhost, rport = socket.getpeername()
         yield from NetworkStore.update(
             dict(
                 filter=('id', self.factory.config.id),
                 update={
-                    'status': '1'
+                    'status': '1',
+                    'lhost': lhost,
+                    'lport': lport,
+                    'rhost': rhost,
+                    'rport': rport
                 }
             )
         )
