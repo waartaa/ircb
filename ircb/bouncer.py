@@ -135,12 +135,7 @@ class Bouncer(object):
                 bot.run_in_loop()
                 self.register_bot(key, bot)
             else:
-                # FIXME: Discard get_joining_messages() and generate joining
-                #        messages dynamically, including channel join messages
-                #        so that IRC clients can load the channels.
                 logger.debug('Reusing existing bot: {}'.format(bot))
-                joining_messages = bot.get_joining_messages()
-                client.send(*[joining_messages])
                 joining_messages_list = [
                     ':* 001 {nick} :You are now connected to {network}'.format(
                         nick=bot.nick, network=network.name),
@@ -153,13 +148,14 @@ class Bouncer(object):
                     )
                 })
                 for channel in connected_channels:
-                    # joining_messages_list.append(
-                    #    ':{nick}_!* JOIN {channel}'.format(
-                    #        nick=network.nickanme,
-                    #        channel=channel.name))
+                    joining_messages_list.append(
+                        ':{nick}!* JOIN {channel}'.format(
+                            nick=bot.nick,
+                            channel=channel.name)
+                    )
                     bot.raw('NAMES %s' % channel.name)
 
-                # client.send(*['\r\n'.join(joining_messages_list)])
+                client.send(*['\r\n'.join(joining_messages_list)])
 
             def forward(line):
                 bot = self.bots.get(key)
