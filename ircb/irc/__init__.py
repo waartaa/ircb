@@ -87,6 +87,11 @@ class IrcbBot(IrcBot):
         self.create_connection()
         self.add_signal_handlers()
 
+    def connection_made(self, f):
+        super().connection_made(f)
+        # Release lock acquired during creating a new bot instance
+        self.config.lock.release()
+
     def join(self, target, password=None):
         """join a channel"""
         if not password:
