@@ -59,9 +59,9 @@ class BouncerServerClientProtocol(Connection):
             elif self.forward:
                 self.forward(line)
 
-            if self.forward is None:
-                self.forward = yield from self.get_bot_handle(
-                    self.network, self)
+        if self.forward is None:
+            self.forward = yield from self.get_bot_handle(
+                self.network, self)
 
     def connection_lost(self, exc):
         self.unregister_client(self.network.id, self)
