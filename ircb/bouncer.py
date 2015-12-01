@@ -143,8 +143,8 @@ class Bouncer(object):
                 client.send(*[joining_messages])
                 joining_messages_list = [
                     ':* 001 {nick} :You are now connected to {network}'.format(
-                        nick='rtnpro_', network=network.name),
-                    ':* 251 {nick} : '.format(nick='rtnpro_')
+                        nick=bot.nick, network=network.name),
+                    ':* 251 {nick} : '.format(nick=bot.nick)
                 ]
                 connected_channels = yield from ChannelStore.get({
                     'query': dict(
