@@ -103,6 +103,7 @@ class Bouncer(object):
         bouncer_server.close()
         loop.run_until_complete(bouncer_server.wait_closed())
 
+    @asyncio.coroutine
     def get_bot_handle(self, network, client):
         try:
             key = network.id
@@ -129,13 +130,21 @@ class Bouncer(object):
                     nick=network.nickname,
                     realname=network.realname,
                     host=network.hostname,
-                    port=network.port
+                    port=network.port,
+                    lock=asyncio.Lock()
                 )
+                # Acquire lock for connecting to IRC server, so that
+                # other clients connecting to the same bot can wait on this
+                # lock before trying to send messages to the bot
+                yield from config['lock'].acquire()
                 bot = IrcbBot(**config)
                 bot.run_in_loop()
                 self.register_bot(key, bot)
             else:
                 logger.debug('Reusing existing bot: {}'.format(bot))
+                # Wait for bot.config.lock to be release when connection is
+                # made to remote IRC server
+                yield from bot.config.lock
                 joining_messages_list = [
                     ':* 001 {nick} :You are now connected to {network}'.format(
                         nick=bot.nick, network=network.name),
