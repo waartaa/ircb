@@ -5,7 +5,6 @@ import re
 
 from irc3 import IrcBot, IrcConnection
 
-from ircb.stores import NetworkMessageStore
 from ircb.storeclient import NetworkStore
 from ircb.storeclient import ChannelStore
 
@@ -81,7 +80,6 @@ class IrcbBot(IrcBot):
 
     def __init__(self, *args, **kwargs):
         self.clients = None
-        self.message_store = NetworkMessageStore()
         super().__init__(*args, **kwargs)
 
     def run_in_loop(self):
@@ -169,7 +167,3 @@ class IrcbBot(IrcBot):
     def dispatch_to_clients(self, data):
         for client in self.clients:
             client.send(data)
-
-    def get_joining_messages(self):
-        logger.debug('Joining messages: %s', self.message_store.get_all())
-        return self.message_store.get_all()
