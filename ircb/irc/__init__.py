@@ -7,6 +7,7 @@ from irc3 import IrcBot, IrcConnection
 
 from ircb.stores import NetworkMessageStore
 from ircb.storeclient import NetworkStore
+from ircb.storeclient import ChannelStore
 
 logger = logging.getLogger('irc')
 
@@ -96,6 +97,32 @@ class IrcbBot(IrcBot):
         if password:
             target += ' ' + password
         self.send_line('JOIN %s' % target)
+        asyncio.Task(self.join_handler(target, password))
+
+    @asyncio.coroutine
+    def join_handler(self, target, password):
+        yield from ChannelStore.create_or_update(
+            dict(
+                channel=target,
+                network_id=self.config.id,
+                password=password,
+                status='0'
+            )
+        )
+
+    def part(self, target, reason=None):
+        super().part(target, reason)
+        asyncio.Task(self.part_handler(target))
+
+    @asyncio.coroutine
+    def part_handler(self, target):
+        yield from ChannelStore.create_or_update(
+            dict(
+                channel=target,
+                network_id=self.config.id,
+                status='2'
+            )
+        )
 
     def raw(self, message):
         """Handle raw message"""
