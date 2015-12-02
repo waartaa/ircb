@@ -144,7 +144,8 @@ class Bouncer(object):
                 logger.debug('Reusing existing bot: {}'.format(bot))
                 # Wait for bot.config.lock to be release when connection is
                 # made to remote IRC server
-                yield from bot.config.lock
+                if bot.config.lock.locked():
+                    yield from bot.config.lock
                 joining_messages_list = [
                     ':* 001 {nick} :You are now connected to {network}'.format(
                         nick=bot.nick, network=network.name),
