@@ -32,9 +32,9 @@ class ChannelStore(BaseStore):
         if isinstance(query, dict):
             qs = session.query(Channel)
             if query.get('network_id'):
-                qs.filter(Channel.network_id == query['network_id'])
+                qs = qs.filter(Channel.network_id == query['network_id'])
             if query.get('status'):
-                qs.filter(Channel.status == query['status'])
+                qs = qs.filter(Channel.status == query['status'])
             return qs.all()
         else:
             return session.query(Channel).get(query)
