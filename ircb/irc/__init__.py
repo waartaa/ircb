@@ -3,7 +3,7 @@ import asyncio
 import logging
 import re
 
-from irc3 import IrcBot, IrcConnection
+import irc3
 
 from ircb.storeclient import NetworkStore
 from ircb.storeclient import ChannelStore
@@ -11,7 +11,7 @@ from ircb.storeclient import ChannelStore
 logger = logging.getLogger('irc')
 
 
-class IrcbIrcConnection(IrcConnection):
+class IrcbIrcConnection(irc3.IrcConnection):
 
     def connection_made(self, transport):
         super().connection_made(transport)
@@ -57,10 +57,10 @@ class IrcbIrcConnection(IrcConnection):
         )
 
 
-class IrcbBot(IrcBot):
+class IrcbBot(irc3.IrcBot):
 
     defaults = dict(
-        IrcBot.defaults,
+        irc3.IrcBot.defaults,
         nick=None,
         realname='',
         userinfo=None,
@@ -73,6 +73,7 @@ class IrcbBot(IrcBot):
             userinfo='{userinfo}',
             time='{now:%c}'
         ),
+        includes=['ircb.irc.plugins.ircb'],
         connection=IrcbIrcConnection
     )
     cmd_regex = re.compile(
@@ -129,6 +130,7 @@ class IrcbBot(IrcBot):
 
     def raw(self, message):
         """Handle raw message"""
+        logger.debug('Received raw msg: %s' % message)
         m = self.cmd_regex.match(message)
         cmd = args = msg = None
         if m:
