@@ -2,27 +2,29 @@ import asyncio
 from flask.ext.script import Command, Manager, Option
 
 from ircb.web.app import app
-from ircb.models import get_session, User
 from ircb.storeclient import NetworkStore
+from ircb.storeclient import UserStore
 from ircb.lib.async import coroutinize
 import ircb.stores
 import ircb.bouncer
 
 manager = Manager(app)
-session = get_session()
 
 
 class CreateUserCommand(Command):
     option_list = (
         Option('--username', '-u', dest='username'),
         Option('--email', '-e', dest='email'),
-        Option('--password', dest='password')
+        Option('--password', '-p', dest='password')
     )
 
+    @coroutinize
     def run(self, username, email, password):
-        user = User(username=username, email=email, password=password)
-        session.add(user)
-        session.commit()
+        yield from UserStore.create(dict(
+            username=username,
+            email=email,
+            password=password
+        ))
 
 
 class CreateNetworkCommand(Command):
