@@ -21,18 +21,7 @@ class IrcbIrcConnection(irc3.IrcConnection):
         super().data_received(data)
 
     def connection_lost(self, exc):
-        yield from NetworkStore.update(
-            dict(
-                filter=('id', self.factory.config.id),
-                update={
-                    'status': '3',
-                    'lhost': None,
-                    'lport': None,
-                    'rhost': None,
-                    'rport': None
-                }
-            )
-        )
+        asyncio.Task(self.handle_connection_lost())
         super().connection_lost(exc)
 
     @asyncio.coroutine
@@ -52,6 +41,24 @@ class IrcbIrcConnection(irc3.IrcConnection):
                     'lport': lport,
                     'rhost': rhost,
                     'rport': rport
+                }
+            )
+        )
+
+    @asyncio.coroutine
+    def handle_connection_lost(self):
+        logger.debug('Network disconnected: %s, %s, %s',
+                     self.factory.config.userinfo,
+                     self.factory.config.name, self.factory.config.nick)
+        yield from NetworkStore.update(
+            dict(
+                filter=('id', self.factory.config.id),
+                update={
+                    'status': '3',
+                    'lhost': None,
+                    'lport': None,
+                    'rhost': None,
+                    'rport': None
                 }
             )
         )
