@@ -208,9 +208,11 @@ class Bouncer(object):
         except KeyError:
             pass
 
-if __name__ == '__main__':
+def runserver(host='0.0.0.0', port=9000):
     logging.config.dictConfig(settings.LOGGING_CONF)
-    session = get_session()
     ircb.stores.initialize()
-    bouncer = Bouncer(session)
-    bouncer.start()
+    bouncer = Bouncer()
+    bouncer.start(host, port)
+
+if __name__ == '__main__':
+    runserver()

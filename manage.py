@@ -6,6 +6,7 @@ from ircb.models import get_session, User
 from ircb.storeclient import NetworkStore
 from ircb.lib.async import coroutinize
 import ircb.stores
+import ircb.bouncer
 
 manager = Manager(app)
 session = get_session()
@@ -54,6 +55,11 @@ class CreateNetworkCommand(Command):
             )
         )
         print(network.access_token)
+
+
+@manager.command
+def runserver(host='0.0.0.0', port=9000):
+    ircb.bouncer.runserver(host, port)
 
 
 if __name__ == '__main__':
