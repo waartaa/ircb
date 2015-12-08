@@ -1,11 +1,11 @@
 import asyncio
 import logging
 import logging.config
-from connection import Connection
+from ircb.connection import Connection
 import ircb.stores
-from ircb.models import get_session, Network as NetworkModel, User
 from ircb.config import settings
-from ircb.storeclient import NetworkStore, ClientStore, ChannelStore
+from ircb.storeclient import (NetworkStore, ClientStore, ChannelStore,
+                              UserStore)
 from ircb.irc import IrcbBot
 
 
@@ -41,7 +41,7 @@ class BouncerServerClientProtocol(Connection):
                 pass
             elif verb == "PASS":
                 access_token = message.split(" ")[0]
-                self.network = self.get_network(access_token)
+                self.network = yield from self.get_network(access_token)
                 if self.network is None:
                     logger.debug(
                         'Client authentiacation failed for token: {}'.format(
@@ -58,7 +58,6 @@ class BouncerServerClientProtocol(Connection):
                     self.client_id = client.id
             elif self.forward:
                 self.forward(line)
-
         if self.forward is None:
             self.forward = yield from self.get_bot_handle(
                 self.network, self)
@@ -70,8 +69,9 @@ class BouncerServerClientProtocol(Connection):
             asyncio.Task(ClientStore.delete({'id': self.client_id}))
 
     def get_network(self, access_token):
-        return session.query(NetworkModel).filter(
-            NetworkModel.access_token == access_token).first()
+        result = yield from NetworkStore.get(
+            {'query': ('access_token', access_token)})
+        return result
 
     def __str__(self):
         return '<BouncerClientConnection {}:{}>'.format(
@@ -83,12 +83,11 @@ class BouncerServerClientProtocol(Connection):
 
 class Bouncer(object):
 
-    def __init__(self, session):
+    def __init__(self):
         self.bots = {}
         self.clients = {}
-        self.session = session
 
-    def start(self, host='127.0.0.1', port=9000):
+    def start(self, host, port):
         loop = asyncio.get_event_loop()
         coro = loop.create_server(
             lambda: BouncerServerClientProtocol(self.get_bot_handle,
@@ -110,7 +109,7 @@ class Bouncer(object):
             bot = self.bots.get(key)
             self.register_client(key, client)
             if bot is None:
-                user = session.query(User).get(network.user_id)
+                user = yield from UserStore.get({'query': network.user_id})
                 logger.debug(
                     'Creating new bot: {}-{}'.format(
                         user.username, network.name)
