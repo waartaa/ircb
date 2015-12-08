@@ -6,6 +6,12 @@ NETWORK_CONNECTED = 'network-connected'
 
 # Stores
 
+# User store
+STORE_USER_CREATE = 'store-user-create'
+STORE_USER_CREATED = 'store-user-created'
+STORE_USER_GET = 'store-user-get'
+STORE_USER_GOT = 'store-user-got'
+
 # Network store
 STORE_NETWORK_CREATE = 'store-network-create'
 STORE_NETWORK_CREATED = 'store-network-created'
