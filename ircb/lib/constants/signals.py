@@ -9,6 +9,8 @@ NETWORK_CONNECTED = 'network-connected'
 # Network store
 STORE_NETWORK_CREATE = 'store-network-create'
 STORE_NETWORK_CREATED = 'store-network-created'
+STORE_NETWORK_GET = 'store-network-get'
+STORE_NETWORK_GOT = 'store-network-got'
 STORE_NETWORK_UPDATE = 'store-network-update'
 STORE_NETWORK_UPDATED = 'store-network-updated'
 STORE_NETWORK_DELETE = 'store-network-delete'
