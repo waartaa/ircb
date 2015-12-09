@@ -208,6 +208,7 @@ class Bouncer(object):
         except KeyError:
             pass
 
+
 def runserver(host='0.0.0.0', port=9000):
     logging.config.dictConfig(settings.LOGGING_CONF)
     ircb.stores.initialize()
