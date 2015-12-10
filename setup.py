@@ -26,5 +26,8 @@ setup(
         'License :: OSI Approved :: MIT',
         'Operating System :: POSIX :: Linux',
         'Programming Language :: Python',
-        ]
+        ],
+    entry_points={
+        'console_scripts': ['ircb=ircb.cli.main:cli']
+    }
 )
