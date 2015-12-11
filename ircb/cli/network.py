@@ -2,7 +2,7 @@
 import click
 
 from ircb.storeclient import NetworkStore
-
+from ircb.lib.async import coroutinize
 
 @click.group(name='networks')
 def network_cli():
@@ -20,13 +20,14 @@ def network_cli():
 @click.option('--username', default='')
 @click.option('--password', default='')
 @click.option('--usermode', default='0')
+@coroutinize
 def create(user, network_name, host, port, nick, realname, username, password,
            usermode):
     """Create a network for a user"""
     network = yield from NetworkStore.create(
         dict(
             user=user,
-            name=name,
+            name=network_name,
             nickname=nick,
             hostname=host,
             port=port,
