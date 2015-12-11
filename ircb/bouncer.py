@@ -131,7 +131,7 @@ class Bouncer(object):
                     host=network.hostname,
                     port=network.port,
                     ssl=network.ssl,
-                    ssl_verify=network.ssl_verify,
+                    ssl_verify=network.ssl_verify.code,
                     lock=asyncio.Lock()
                 )
                 # Acquire lock for connecting to IRC server, so that
