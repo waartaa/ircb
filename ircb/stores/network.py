@@ -32,14 +32,14 @@ class NetworkStore(BaseStore):
 
     @classmethod
     def create(cls, user, name, nickname, hostname, port, realname, username,
-               password, usermode):
+               password, usermode, ssl, ssl_verify):
         user = session.query(User).filter(User.username == user).first()
         if user is None:
             raise
         network = Network(name=name, nickname=nickname, hostname=hostname,
                           port=port, realname=realname, username=username,
-                          password=password, usermode=usermode,
-                          user_id=user.id)
+                          password=password, usermode=usermode, ssl=ssl,
+                          ssl_verify=ssl_verify, user_id=user.id)
         session.add(network)
         session.commit()
         return network
