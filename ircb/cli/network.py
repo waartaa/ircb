@@ -20,9 +20,11 @@ def network_cli():
 @click.option('--username', default='')
 @click.option('--password', default='')
 @click.option('--usermode', default='0')
+@click.option('--ssl', default=False)
+@click.option('--ssl_verify', default="CERT_NONE")
 @coroutinize
 def create(user, network_name, host, port, nick, realname, username, password,
-           usermode):
+           usermode,ssl,ssl_verify):
     """Create a network for a user"""
     network = yield from NetworkStore.create(
         dict(
@@ -34,7 +36,9 @@ def create(user, network_name, host, port, nick, realname, username, password,
             realname=realname,
             username=username,
             password=password,
-            usermode=usermode
+            usermode=usermode,
+            ssl=ssl,
+            ssl_verify=ssl_verify
         )
     )
     print(network.access_token)
