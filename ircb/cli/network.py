@@ -6,6 +6,7 @@ from tabulate import tabulate
 from ircb.storeclient import NetworkStore
 from ircb.lib.async import coroutinize
 
+
 @click.group(name='networks')
 def network_cli():
     """Manager networks"""
@@ -29,7 +30,7 @@ def network_cli():
                   ['CERT_NONE', 'CERT_OPTIONAL', 'CERT_REQUIRED']))
 @coroutinize
 def create(user, network_name, host, port, nick, realname, username, password,
-           usermode,ssl,ssl_verify):
+           usermode, ssl, ssl_verify):
     """Create a network for a user"""
     network = yield from NetworkStore.create(
         dict(
@@ -76,6 +77,7 @@ def connect(id):
             })
     )
 
+
 @click.command(name='disconnect')
 @click.argument('id')
 @coroutinize
@@ -89,7 +91,7 @@ def disconnect(id):
     )
 
 
-network_cli.add_command(create)
+network_cli.add_command(network_create)
 network_cli.add_command(ls)
 network_cli.add_command(connect)
 network_cli.add_command(disconnect)
