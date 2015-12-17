@@ -9,6 +9,7 @@ build
 sdist
 
 *.sqlite3
+*.db
 
 */config/networks.json
 */config/users.json
