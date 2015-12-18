@@ -24,11 +24,14 @@ If you want to set up `ircb` for development purpose. Follow the given steps
 - [OPTIONAL] ``export IRCB_SETTINGS=<path to your custom settings file>``
 
 ## Setting up data
-- Creating a user: ``python3 manage.py createuser --username <your username> --email <your email> --password <your password>``
-- Creating a network for a user:
-
+- Creating a user:
   ```
-  python3 manage.py createnetwork --user <ircb username> --name <name of network> --nick <some nick> --host <IRC server host> --port <IRC server port>
+  ircb users create USERNAME EMAIL [PASSWORD]
+  ```
+
+- Creating a network for a user:
+  ```
+  ircb networks create USER NETWORK_NAME HOST PORT NICK
   ```
   You'll get an access token as an output of the above. Use this as
   **server password** when configuring your IRC client to connect to ``ircb``.
