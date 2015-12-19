@@ -23,6 +23,8 @@ If you want to set up `ircb` for development purpose. Follow the given steps
 - Copy and extend ``ircb/config/default_settings.py``, as needed, to a custom location. say, ``/etc/ircb/settings.py``.
 - [OPTIONAL] ``export IRCB_SETTINGS=<path to your custom settings file>``
 
+- Install the project as a development dep ``python3 setup.py develop``
+
 ## Setting up data
 - Creating a user:
   ```
