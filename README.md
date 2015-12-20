@@ -39,7 +39,7 @@ If you want to set up `ircb` for development purpose. Follow the given steps
 ## Running the app
 
 ```
-python3 ircb/bouncer.py
+ircb runserver
 ```
 
 ## Connecting for IRC client
