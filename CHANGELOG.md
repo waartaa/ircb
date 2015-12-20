@@ -10,7 +10,7 @@ This is the inital releas for **ircb** and ships with the following features:
 
 **Implemented enhancements:**
 
-- Autjoin previously joined channels when connected to IRC server [\#27](https://github.com/waartaa/ircb/issues/27)
+- Autojoin previously joined channels when connected to IRC server [\#27](https://github.com/waartaa/ircb/issues/27)
 - Add support for ssl, ssl\_verify fields in "ircb networks create" command [\#22](https://github.com/waartaa/ircb/issues/22)
 - Connect to IRC server using SSL [\#18](https://github.com/waartaa/ircb/issues/18)
 - Allow SSL connection to IRC networks [\#17](https://github.com/waartaa/ircb/issues/17)
@@ -30,7 +30,7 @@ This is the inital releas for **ircb** and ships with the following features:
 
 **Merged pull requests:**
 
-- Autjoin previously joined channels when connecting to IRC server. [\#28](https://github.com/waartaa/ircb/pull/28) ([rtnpro](https://github.com/rtnpro))
+- Autojoin previously joined channels when connecting to IRC server. [\#28](https://github.com/waartaa/ircb/pull/28) ([rtnpro](https://github.com/rtnpro))
 - Implemented: Add support for ssl, ssl\_verify fields in 'ircb networks create' command. issue \#22 [\#24](https://github.com/waartaa/ircb/pull/24) ([PolBaladas](https://github.com/PolBaladas))
 - Fixed issue \#20 'ircb network create does not work' [\#21](https://github.com/waartaa/ircb/pull/21) ([PolBaladas](https://github.com/PolBaladas))
 - Allow connecting to IRC server using SSL. Fixes \#18 [\#19](https://github.com/waartaa/ircb/pull/19) ([rtnpro](https://github.com/rtnpro))
