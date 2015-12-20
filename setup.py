@@ -11,7 +11,7 @@ with open('requirements.txt') as f:
 
 setup(
     name='ircb',
-    version='0.0.1',
+    version='0.1',
     description='A IRC bouncer',
     long_description=''.join(open('README.md').readlines()),
     keywords='irc, client, bouncer',
