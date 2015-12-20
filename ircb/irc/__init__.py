@@ -80,7 +80,7 @@ class IrcbBot(irc3.IrcBot):
             userinfo='{userinfo}',
             time='{now:%c}'
         ),
-        includes=['ircb.irc.plugins.ircb'],
+        includes=['ircb.irc.plugins.ircb', 'ircb.irc.plugins.autojoins'],
         connection=IrcbIrcConnection
     )
     cmd_regex = re.compile(
