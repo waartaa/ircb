@@ -36,10 +36,12 @@ class BouncerServerClientProtocol(Connection):
         data = self.decode(data)
         logger.debug('Received client data: %s', data)
         for line in data.rstrip().splitlines():
-            verb, message = line.split(" ", 1)
+            tokens = line.split(" ", 1)
+            verb = tokens[0]
             if verb == "QUIT":
                 pass
             elif verb == "PASS":
+                message = tokens[1]
                 access_token = message.split(" ")[0]
                 self.network = yield from self.get_network(access_token)
                 if self.network is None:
