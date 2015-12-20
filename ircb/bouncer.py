@@ -108,6 +108,12 @@ class Bouncer(object):
             key = network.id
             bot = self.bots.get(key)
             self.register_client(key, client)
+            connected_channels = yield from ChannelStore.get({
+                'query': dict(
+                    network_id=key,
+                    status='1'
+                )
+            })
             if bot is None:
                 user = yield from UserStore.get({'query': network.user_id})
                 logger.debug(
@@ -132,7 +138,8 @@ class Bouncer(object):
                     port=network.port,
                     ssl=network.ssl,
                     ssl_verify=network.ssl_verify.code,
-                    lock=asyncio.Lock()
+                    lock=asyncio.Lock(),
+                    autojoins=[channel.name for channel in connected_channels]
                 )
                 # Acquire lock for connecting to IRC server, so that
                 # other clients connecting to the same bot can wait on this
@@ -153,12 +160,6 @@ class Bouncer(object):
                         nick=bot.nick, network=network.name),
                     ':* 251 {nick} : '.format(nick=bot.nick)
                 ]
-                connected_channels = yield from ChannelStore.get({
-                    'query': dict(
-                        network_id=key,
-                        status='1'
-                    )
-                })
                 for channel in connected_channels:
                     joining_messages_list.append(
                         ':{nick}!* JOIN {channel}'.format(
