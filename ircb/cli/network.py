@@ -20,8 +20,10 @@ def network_cli():
 @click.option('--username', default='')
 @click.option('--password', default='')
 @click.option('--usermode', default='0')
-@click.option('--ssl', default=False)
-@click.option('--ssl_verify', default="CERT_NONE")
+@click.option('--ssl', default=False, is_flag=True)
+@click.option('--ssl_verify', default="CERT_NONE",
+              type=click.Choice(
+                  ['CERT_NONE', 'CERT_OPTIONAL', 'CERT_REQUIRED']))
 @coroutinize
 def create(user, network_name, host, port, nick, realname, username, password,
            usermode,ssl,ssl_verify):
