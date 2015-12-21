@@ -14,7 +14,7 @@ def user_cli():
 @click.command(name='create')
 @click.argument('username')
 @click.argument('email')
-@click.argument('password', required=False)
+@click.argument('password', required=False, default='')
 @coroutinize
 def user_create(username, email, password):
     """Create a user"""
