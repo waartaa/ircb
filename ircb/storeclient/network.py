@@ -1,3 +1,4 @@
+from ircb.models import Network
 from ircb.storeclient.base import BaseStore
 from ircb.lib.constants.signals import (
     STORE_NETWORK_CREATE, STORE_NETWORK_CREATED,
@@ -12,3 +13,5 @@ class NetworkStore(BaseStore):
     GOT_SIGNAL = STORE_NETWORK_GOT
     UPDATE_SIGNAL = STORE_NETWORK_UPDATE
     UPDATED_SIGNAL = STORE_NETWORK_UPDATED
+
+    model = Network
