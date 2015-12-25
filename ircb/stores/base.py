@@ -46,7 +46,7 @@ class BaseStore(object):
         )
         dispatcher.send(
             signal=cls.GOT_SIGNAL,
-            data=result,
+            data=cls.serialize(result),
             taskid=taskid)
 
     @classmethod
@@ -62,7 +62,7 @@ class BaseStore(object):
         )
         dispatcher.send(
             signal=cls.CREATED_SIGNAL,
-            data=result,
+            data=cls.serialize(result),
             taskid=taskid)
 
     @classmethod
@@ -78,7 +78,7 @@ class BaseStore(object):
         )
         dispatcher.send(
             signal=cls.UPDATED_SIGNAL,
-            data=result,
+            data=cls.serialize(result),
             taskid=taskid)
 
     @classmethod
@@ -94,7 +94,7 @@ class BaseStore(object):
         )
         dispatcher.send(
             signal=cls.DELETED_SIGNAL,
-            data=result,
+            data=cls.serialize(result),
             taskid=taskid)
 
     @classmethod
@@ -119,8 +119,23 @@ class BaseStore(object):
         )
         dispatcher.send(
             signal=resp_signal,
-            data=result,
+            data=cls.serialize(result),
             taskid=taskid)
+
+    @classmethod
+    def serialize(cls, data):
+        if isinstance(data, Base):
+            return cls.serialize_row(data)
+        elif isinstance(data, list):
+            return cls.serialize_rows(data)
+
+    @classmethod
+    def serialize_rows(cls, rows):
+        return [cls.serialize_row(row) for row in rows]
+
+    @classmethod
+    def serialize_row(cls, row):
+        return row.to_dict()
 
     @classmethod
     def get(self, *args, **kwargs):
