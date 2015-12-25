@@ -1,7 +1,9 @@
 import asyncio
 from uuid import uuid1
 
-from ircb.lib.dispatcher import dispatcher
+from ircb.lib.dispatcher import Dispatcher
+
+dispatcher = Dispatcher(role='storeclient')
 
 
 class BaseStore(object):

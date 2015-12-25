@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
-from ircb.lib.dispatcher import dispatcher
+from ircb.lib.dispatcher import Dispatcher
+from ircb.models.lib import Base
+
 import logging
 
+dispatcher = Dispatcher(role='stores')
 logger = logging.getLogger('stores')
 
 

@@ -2,6 +2,12 @@ SECRET_KEY = 'some key'
 
 DB_URI = 'sqlite:///ircb.db'
 
+SUBSCRIBER_ENDPOINTS = {
+    'stores': 'tcp://127.0.0.1:35000',
+    'storeclient': 'tcp://127.0.0.1:35001',
+    # 'cli': 'tcp://127.0.0.1:35002'
+}
+
 LOGGING_CONF = dict(
     version=1,
     formatters=dict(
