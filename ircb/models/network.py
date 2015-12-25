@@ -5,7 +5,7 @@ from hashlib import md5
 
 from sqlalchemy import (Column, String, Integer, ForeignKey, DateTime,
                         UniqueConstraint, Boolean)
-from sqlalchemy_utils import ChoiceType
+from sqlalchemy_utils import ChoiceType, Choice
 
 from ircb.models.lib import Base, get_session
 from ircb.models.user import User
@@ -49,7 +49,8 @@ class Network(Base):
     password = Column(String(100), nullable=False, default='')
     usermode = Column(String(1), nullable=False, default='0')
     ssl = Column(Boolean(), default=False)
-    ssl_verify = Column(ChoiceType(SSL_VERIFY_CHOICES), default='CERT_NONE')
+    ssl_verify = Column(ChoiceType(SSL_VERIFY_CHOICES),
+                        default=Choice(*SSL_VERIFY_CHOICES[0]))
 
     access_token = Column(String(100), nullable=False, unique=True,
                           default=lambda context: _create_access_token(
@@ -77,3 +78,11 @@ class Network(Base):
 
     def create_access_token(self):
         return _create_access_token(self.user.id, self.name)
+
+    def to_dict(self):
+        d = super().to_dict()
+        d['ssl_verify'] = self.ssl_verify if isinstance(
+            self.ssl_verify, str) else self.ssl_verify.value
+        d['status'] = self.status if isinstance(
+            self.status, str) else self.status.value
+        return d

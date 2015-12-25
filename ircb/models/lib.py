@@ -4,7 +4,16 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm import scoped_session
 from ircb.config import settings
 
-Base = declarative_base()
+
+class _Base(object):
+
+    def to_dict(self):
+        d = {}
+        for col in self.__table__.columns:
+            d[col.name] = getattr(self, col.name)
+        return d
+
+Base = declarative_base(cls=_Base)
 
 
 def create_tables(db_uri=settings.DB_URI):

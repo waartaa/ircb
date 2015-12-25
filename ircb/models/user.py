@@ -33,6 +33,12 @@ class User(Base, UserMixin):
     created = Column(DateTime, default=datetime.datetime.utcnow)
     last_updated = Column(DateTime, default=datetime.datetime.utcnow)
 
+    def to_dict(self):
+        d = super().to_dict()
+        d.pop('password')
+        d['is_active'] = self.is_active()
+        return d
+
 
 class Role(Base):
     __tablename__ = 'roles'

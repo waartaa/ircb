@@ -38,3 +38,9 @@ class Channel(Base):
     # timestamps
     created = Column(DateTime, default=datetime.datetime.utcnow)
     last_updated = Column(DateTime, default=datetime.datetime.utcnow)
+
+    def to_dict(self):
+        d = super().to_dict()
+        d['status'] = self.status if isinstance(self.status, str) \
+            else self.status.value
+        return d
