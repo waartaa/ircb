@@ -42,5 +42,5 @@ class Channel(Base):
     def to_dict(self):
         d = super().to_dict()
         d['status'] = self.status if isinstance(self.status, str) \
-            else self.status.value
+            else self.status.code
         return d
