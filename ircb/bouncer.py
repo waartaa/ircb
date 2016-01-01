@@ -139,7 +139,7 @@ class Bouncer(object):
                     host=network.hostname,
                     port=network.port,
                     ssl=network.ssl,
-                    ssl_verify=network.ssl_verify.code,
+                    ssl_verify=network.ssl_verify,
                     lock=asyncio.Lock(),
                     autojoins=[channel.name for channel in connected_channels]
                 )
