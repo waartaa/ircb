@@ -5,7 +5,7 @@ from ircb.connection import Connection
 import ircb.stores
 from ircb.config import settings
 from ircb.storeclient import (NetworkStore, ClientStore, ChannelStore,
-                              UserStore)
+                              UserStore, init as storeclient_init)
 from ircb.irc import IrcbBot
 
 
@@ -214,9 +214,11 @@ class Bouncer(object):
             pass
 
 
-def runserver(host='0.0.0.0', port=9000):
+def runserver(host='0.0.0.0', port=9000, mode='allinone'):
     logging.config.dictConfig(settings.LOGGING_CONF)
-    ircb.stores.initialize()
+    if mode == 'allinone':
+        ircb.stores.initialize()
+    storeclient_init()
     bouncer = Bouncer()
     bouncer.start(host, port)
 
