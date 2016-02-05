@@ -28,12 +28,25 @@ class Handler(aiozmq.rpc.AttrHandler):
 
 class Dispatcher(object):
 
-    def __init__(self, role):
+    def __init__(self, role, loop=None):
         self.role = role
         self._signal_listeners = defaultdict(set)
         self.handler = Handler(self._signal_listeners)
         self.subscriber = self.publisher = None
         asyncio.Task(self.setup_pubsub())
+        self.lock = asyncio.Lock()
+        self.loop = loop or asyncio.get_event_loop()
+        self.queue = asyncio.Queue(loop=self.loop)
+        asyncio.Task(self.process_queue())
+
+    @asyncio.coroutine
+    def process_queue(self):
+        while True:
+            while self.lock.locked():
+                yield from asyncio.sleep(0.1)
+                continue
+            (signal, data, taskid) = yield from self.queue.get()
+            yield from self._send(signal, data, taskid)
 
     @asyncio.coroutine
     def setup_pubsub(self):
@@ -43,6 +56,7 @@ class Dispatcher(object):
             log_exceptions=True)
         self.publisher = yield from aiozmq.rpc.connect_pubsub(
             connect=self.subscriber_endpoints)
+        self.lock.release()
 
     @property
     def subscriber_endpoints(self):
@@ -51,7 +65,7 @@ class Dispatcher(object):
                 if role != self.role]
 
     def send(self, signal, data, taskid=None):
-        asyncio.Task(self._send(signal, data, taskid))
+        asyncio.Task(self.queue.put((signal, data, taskid)))
 
     @asyncio.coroutine
     def _send(self, signal, data, taskid=None):
