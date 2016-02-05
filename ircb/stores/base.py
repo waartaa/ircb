@@ -4,7 +4,6 @@ from ircb.models.lib import Base
 
 import logging
 
-dispatcher = Dispatcher(role='stores')
 logger = logging.getLogger('stores')
 
 
@@ -156,3 +155,10 @@ class BaseStore(object):
     @classmethod
     def create_or_update(self, *args, **kwargs):
         raise NotImplementedError
+
+
+def init():
+    global dispatcher
+    dispatcher = Dispatcher(role='stores')
+
+dispatcher = None

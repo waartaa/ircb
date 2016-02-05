@@ -3,8 +3,6 @@ from uuid import uuid1
 
 from ircb.lib.dispatcher import Dispatcher
 
-dispatcher = Dispatcher(role='storeclient')
-
 
 class BaseStore(object):
     CREATE_SIGNAL = None
@@ -123,3 +121,10 @@ class BaseStore(object):
     @classmethod
     def get_task_id(self, data):
         return str(uuid1())
+
+
+def init():
+    global dispatcher
+    dispatcher = Dispatcher(role='storeclient')
+
+dispatcher = None
