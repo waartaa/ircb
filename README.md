@@ -40,9 +40,15 @@ If you want to set up `ircb` for development purpose. Follow the given steps
 
 ## Running the app
 
+### Quickstart
 ```
-ircb runserver
+ircb run server
 ```
+
+### Advanced
+
+- Run stores as a different process: ``ircb run stores``
+- Run bouncer: ``irc run server``
 
 ## Connecting for IRC client
 
