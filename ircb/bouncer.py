@@ -5,7 +5,7 @@ from ircb.connection import Connection
 import ircb.stores
 from ircb.config import settings
 from ircb.storeclient import (NetworkStore, ClientStore, ChannelStore,
-                              UserStore, init as storeclient_init)
+                              UserStore, initialize as storeclient_initialize)
 from ircb.irc import IrcbBot
 
 
@@ -51,6 +51,7 @@ class BouncerServerClientProtocol(Connection):
                     self.unregister_client(self.network.id, self)
                     self.transport.write('Authentication failed')
                     self.transport.close()
+                    return
                 else:
                     client = yield from ClientStore.create({
                         'socket': '{}:{}'.format(self.host, self.port),
@@ -63,6 +64,10 @@ class BouncerServerClientProtocol(Connection):
         if self.forward is None:
             self.forward = yield from self.get_bot_handle(
                 self.network, self)
+            if self.forward is None:
+                self.transport.write('Bot not connected')
+                self.transport.close()
+                asyncio.Task(ClientStore.delete({'id': self.client_id}))
 
     def connection_lost(self, exc):
         self.unregister_client(self.network.id, self)
@@ -88,6 +93,8 @@ class Bouncer(object):
     def __init__(self):
         self.bots = {}
         self.clients = {}
+        NetworkStore.on('create', self.on_network_create)
+        NetworkStore.on('update', self.on_network_update)
 
     def start(self, host, port):
         loop = asyncio.get_event_loop()
@@ -104,6 +111,54 @@ class Bouncer(object):
         bouncer_server.close()
         loop.run_until_complete(bouncer_server.wait_closed())
 
+    def on_network_update(self, network, modified=None):
+        asyncio.Task(self._on_network_create_update(network))
+
+    def on_network_create(self, network):
+        asyncio.Task(self._on_network_create_update(network))
+
+    @asyncio.coroutine
+    def _on_network_create_update(self, network):
+        if network.status == '0':
+            bot = self.bots.get(network.id)
+            if bot:
+                return
+            user = yield from UserStore.get({'query': network.user_id})
+            logger.debug(
+                'Creating new bot: {}-{}'.format(
+                    user.username, network.name)
+            )
+            connected_channels = yield from ChannelStore.get({
+                'query': dict(
+                    network_id=network.id,
+                    status='1'
+                )
+            })
+            config = dict(
+                id=network.id,
+                name=network.name,
+                userinfo=network.username,
+                password=network.password,
+                nick=network.nickname,
+                realname=network.realname,
+                host=network.hostname,
+                port=network.port,
+                ssl=network.ssl,
+                ssl_verify=network.ssl_verify,
+                lock=asyncio.Lock(),
+                autojoins=[channel.name for channel in connected_channels]
+            )
+            # Acquire lock for connecting to IRC server, so that
+            # other clients connecting to the same bot can wait on this
+            # lock before trying to send messages to the bot
+            yield from config['lock'].acquire()
+            bot = IrcbBot(**config)
+            bot.run_in_loop()
+            self.register_bot(network.id, bot)
+
+    def on_network_delete(self, network):
+        pass
+
     @asyncio.coroutine
     def get_bot_handle(self, network, client):
         try:
@@ -117,11 +172,6 @@ class Bouncer(object):
                 )
             })
             if bot is None:
-                user = yield from UserStore.get({'query': network.user_id})
-                logger.debug(
-                    'Creating new bot: {}-{}'.format(
-                        user.username, network.name)
-                )
                 yield from NetworkStore.update(
                     dict(
                         filter=('id', network.id),
@@ -129,48 +179,27 @@ class Bouncer(object):
                             'status': '0'
                         })
                 )
-                config = dict(
-                    id=network.id,
-                    name=network.name,
-                    userinfo=network.username,
-                    password=network.password,
-                    nick=network.nickname,
-                    realname=network.realname,
-                    host=network.hostname,
-                    port=network.port,
-                    ssl=network.ssl,
-                    ssl_verify=network.ssl_verify,
-                    lock=asyncio.Lock(),
-                    autojoins=[channel.name for channel in connected_channels]
+                return
+            logger.debug('Reusing existing bot: {}'.format(bot))
+            # Wait for bot.config.lock to be release when connection is
+            # made to remote IRC server
+            if bot.config.lock:
+                yield from bot.config.lock
+                bot.config.lock = None
+            joining_messages_list = [
+                ':* 001 {nick} :You are now connected to {network}'.format(
+                    nick=bot.nick, network=network.name),
+                ':* 251 {nick} : '.format(nick=bot.nick)
+            ]
+            for channel in connected_channels:
+                joining_messages_list.append(
+                    ':{nick}!* JOIN {channel}'.format(
+                        nick=bot.nick,
+                        channel=channel.name)
                 )
-                # Acquire lock for connecting to IRC server, so that
-                # other clients connecting to the same bot can wait on this
-                # lock before trying to send messages to the bot
-                yield from config['lock'].acquire()
-                bot = IrcbBot(**config)
-                bot.run_in_loop()
-                self.register_bot(key, bot)
-            else:
-                logger.debug('Reusing existing bot: {}'.format(bot))
-                # Wait for bot.config.lock to be release when connection is
-                # made to remote IRC server
-                if bot.config.lock:
-                    yield from bot.config.lock
-                    bot.config.lock = None
-                joining_messages_list = [
-                    ':* 001 {nick} :You are now connected to {network}'.format(
-                        nick=bot.nick, network=network.name),
-                    ':* 251 {nick} : '.format(nick=bot.nick)
-                ]
-                for channel in connected_channels:
-                    joining_messages_list.append(
-                        ':{nick}!* JOIN {channel}'.format(
-                            nick=bot.nick,
-                            channel=channel.name)
-                    )
-                    bot.raw('NAMES %s' % channel.name)
+                bot.raw('NAMES %s' % channel.name)
 
-                client.send(*['\r\n'.join(joining_messages_list)])
+            client.send(*['\r\n'.join(joining_messages_list)])
 
             def forward(line):
                 bot = self.bots.get(key)
@@ -218,7 +247,7 @@ def runserver(host='0.0.0.0', port=9000, mode='allinone'):
     logging.config.dictConfig(settings.LOGGING_CONF)
     if mode == 'allinone':
         ircb.stores.initialize()
-    storeclient_init()
+    storeclient_initialize()
     bouncer = Bouncer()
     bouncer.start(host, port)
 
