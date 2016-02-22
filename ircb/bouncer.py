@@ -1,4 +1,5 @@
 import asyncio
+from collections import defaultdict
 import logging
 import logging.config
 from ircb.connection import Connection
@@ -92,7 +93,7 @@ class Bouncer(object):
 
     def __init__(self):
         self.bots = {}
-        self.clients = {}
+        self.clients = defaultdict(set)
         NetworkStore.on('create', self.on_network_create)
         NetworkStore.on('update', self.on_network_update)
 
@@ -220,22 +221,19 @@ class Bouncer(object):
         if existing_bot:
             existing_bot.protocol.transport.close()
             del self.bots[key]
-        bot.clients = self.clients.get(key, set())
+        bot.clients = self.clients[key]
         self.bots[key] = bot
         logger.debug('Bots: %s', self.bots)
 
     def register_client(self, network_id, client):
         key = network_id
-        clients = self.clients.get(key)
-        if clients is None:
-            clients = set()
-            self.clients[key] = clients
+        clients = self.clients[key]
         clients.add(client)
         logger.debug('Registered new client: %s, %s', key, clients)
 
     def unregister_client(self, network_id, client):
         key = network_id
-        clients = self.clients.get(key)
+        clients = self.clients[key]
         logger.debug('Unregistering client: {}'.format(client))
         try:
             clients.remove(client)
