@@ -156,6 +156,11 @@ class Bouncer(object):
             bot = IrcbBot(**config)
             bot.run_in_loop()
             self.register_bot(network.id, bot)
+        elif network.status == '2':
+            bot = self.bots.get(network.id)
+            if bot:
+                bot.quit()
+                bot.protocol.close()
 
     def on_network_delete(self, network):
         pass
