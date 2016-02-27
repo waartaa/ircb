@@ -48,7 +48,6 @@ class Dispatcher(object):
         self.queue = asyncio.Queue(loop=self.loop)
         asyncio.Task(self.lock.acquire())
         asyncio.Task(self.setup_pubsub())
-        asyncio.Task(self.process_queue())
 
     @asyncio.coroutine
     def process_queue(self):
@@ -56,8 +55,11 @@ class Dispatcher(object):
             while self.lock.locked():
                 yield from asyncio.sleep(0.1)
                 continue
-            (signal, data, taskid) = yield from self.queue.get()
-            yield from self._send(signal, data, taskid)
+            try:
+                (signal, data, taskid) = self.queue.get_nowait()
+                yield from self._send(signal, data, taskid)
+            except asyncio.QueueEmpty:
+                break
 
     @asyncio.coroutine
     def setup_pubsub(self):
@@ -91,7 +93,14 @@ class Dispatcher(object):
                 if role != self.role]
 
     def send(self, signal, data, taskid=None):
-        asyncio.Task(self.queue.put((signal, data, taskid)))
+        asyncio.Task(self.enqueue((signal, data, taskid)))
+
+    @asyncio.coroutine
+    def enqueue(self, data):
+        empty = self.queue.empty()
+        yield from self.queue.put(data)
+        if empty:
+            asyncio.Task(self.process_queue())
 
     @asyncio.coroutine
     def _send(self, signal, data, taskid=None):
@@ -114,5 +123,9 @@ class Dispatcher(object):
         def coro():
             while self.subscriber is None:
                 yield from asyncio.sleep(1)
-            yield from self.subscriber.wait_closed() 
+            yield from self.subscriber.wait_closed()
         self.loop.run_until_complete(coro())
+
+    @asyncio.coroutine
+    def stop(self):
+        self.redis.close()
