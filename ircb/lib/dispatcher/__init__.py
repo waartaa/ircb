@@ -119,12 +119,7 @@ class Dispatcher(object):
                 e, callback, signal), exc_info=True)
 
     def run_forever(self):
-        @asyncio.coroutine
-        def coro():
-            while self.subscriber is None:
-                yield from asyncio.sleep(1)
-            yield from self.subscriber.wait_closed()
-        self.loop.run_until_complete(coro())
+        self.loop.run_forever()
 
     @asyncio.coroutine
     def stop(self):
