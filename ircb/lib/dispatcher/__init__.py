@@ -53,7 +53,7 @@ class Dispatcher(object):
     def process_queue(self):
         while True:
             while self.lock.locked():
-                yield from asyncio.sleep(0.1)
+                yield from asyncio.sleep(0.01)
                 continue
             try:
                 (signal, data, taskid) = self.queue.get_nowait()
@@ -83,7 +83,7 @@ class Dispatcher(object):
             while ret != b'1':
                 yield from self.publisher.publish('register_sub').register_sub(subscriber_addr, _key)
                 ret = yield from self.redis.get(_key)
-                yield from asyncio.sleep(1)
+                yield from asyncio.sleep(0.01)
         self.lock.release()
 
     @property
