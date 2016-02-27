@@ -33,7 +33,9 @@ class Handler(aiozmq.rpc.AttrHandler):
         if subscriber_addr in connections:
             return
         self._dispatcher.publisher.transport.connect(subscriber_addr)
-        yield from self._dispatcher.redis.set(key, 1)
+        redis = yield from aioredis.create_redis((settings.REDIS_HOST, settings.REDIS_PORT))
+        yield from redis.set(key, 1)
+        redis.close()
 
 
 class Dispatcher(object):
@@ -63,7 +65,7 @@ class Dispatcher(object):
 
     @asyncio.coroutine
     def setup_pubsub(self):
-        self.redis = yield from aioredis.create_redis((settings.REDIS_HOST, settings.REDIS_PORT))
+        redis = yield from aioredis.create_redis((settings.REDIS_HOST, settings.REDIS_PORT))
         if self.role == 'stores':
             bind_addr = settings.SUBSCRIBER_ENDPOINTS[self.role]
         else:
@@ -79,12 +81,13 @@ class Dispatcher(object):
                 settings.SUBSCRIBER_ENDPOINTS['stores'])
             _key = 'SUBSCRIBER_REGISTERED_{}'.format(subscriber_addr)
             ret = 0
-            yield from self.redis.set(_key, ret)
+            yield from redis.set(_key, ret)
             while ret != b'1':
                 yield from self.publisher.publish('register_sub').register_sub(subscriber_addr, _key)
-                ret = yield from self.redis.get(_key)
+                ret = yield from redis.get(_key)
                 yield from asyncio.sleep(0.01)
         self.lock.release()
+        redis.close()
 
     @property
     def subscriber_endpoints(self):
@@ -120,7 +123,3 @@ class Dispatcher(object):
 
     def run_forever(self):
         self.loop.run_forever()
-
-    @asyncio.coroutine
-    def stop(self):
-        self.redis.close()
