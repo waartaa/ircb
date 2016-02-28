@@ -8,8 +8,7 @@ from ircb.cli.run import run_cli
 @click.group()
 def cli():
     """ircb CLI"""
-    from ircb.storeclient import initialize
-    initialize()
+    pass
 
 
 cli.add_command(user_cli)
