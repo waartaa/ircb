@@ -90,6 +90,9 @@ class IrcbBot(irc3.IrcBot):
         self.clients = None
         super().__init__(*args, **kwargs)
 
+    def reload_config(self, *ini, **config):
+        self.config = irc3.utils.Config(dict(self.defaults, *ini, **config))
+
     def run_in_loop(self):
         """Run bot in an already running event loop"""
         self.create_connection()
