@@ -122,7 +122,7 @@ class Bouncer(object):
     def _on_network_create_update(self, network):
         if network.status == '0':
             bot = self.bots.get(network.id)
-            if bot:
+            if bot and not bot.protocol.closed:
                 return
             user = yield from UserStore.get({'query': network.user_id})
             logger.debug(
@@ -153,7 +153,10 @@ class Bouncer(object):
             # other clients connecting to the same bot can wait on this
             # lock before trying to send messages to the bot
             yield from config['lock'].acquire()
-            bot = IrcbBot(**config)
+            if bot and bot.protocol.closed:
+                bot.reload_config(**config)
+            else:
+                bot = IrcbBot(**config)
             bot.run_in_loop()
             self.register_bot(network.id, bot)
         elif network.status == '2':
