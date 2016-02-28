@@ -9,7 +9,8 @@ from ircb.lib.async import coroutinize
 @click.group(name='networks')
 def network_cli():
     """Manager networks"""
-    pass
+    from ircb.storeclient import initialize
+    initialize()
 
 
 @click.command(name='create')

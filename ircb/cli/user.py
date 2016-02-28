@@ -8,7 +8,8 @@ from ircb.storeclient import UserStore
 @click.group(name='users')
 def user_cli():
     """Manager users"""
-    pass
+    from ircb.storeclient import initialize
+    initialize()
 
 
 @click.command(name='create')
