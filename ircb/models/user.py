@@ -39,6 +39,11 @@ class User(Base, UserMixin):
         d['is_active'] = self.is_active()
         return d
 
+    def authenticate(self, password):
+        if self.password == password:
+            return True
+        return False
+
 
 class Role(Base):
     __tablename__ = 'roles'
