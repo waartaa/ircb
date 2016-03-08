@@ -1,6 +1,7 @@
 import asyncio
 
 from aiohttp import web
+from aiohttp_auth import auth
 
 from ircb.storeclient import UserStore
 
@@ -14,6 +15,14 @@ class SigninView(web.View):
             dict(query=('auth', (data.get('username'), data.get('password'))))
         )
         if user:
-            return web.Response(body=b'OK', status=200)
-        else:
-            return web.Response(body=b'LOGIN FAILURE', status=400)
+            yield from auth.remember(self.request, user.username)
+            return web.Response(body=b'OK')
+        raise web.HTTPForbidden()
+
+
+class SignoutView(web.View):
+
+    @asyncio.coroutine
+    def post(self):
+        yield from auth.forget(self.request)
+        return web.Response(body=b'OK')
