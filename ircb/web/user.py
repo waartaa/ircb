@@ -4,6 +4,7 @@ from aiohttp import web
 from aiohttp_auth import auth
 
 from ircb.storeclient import UserStore
+from ircb.web.decorators import auth_required
 
 
 class SigninView(web.View):
@@ -22,6 +23,7 @@ class SigninView(web.View):
 
 class SignoutView(web.View):
 
+    @auth_required
     @asyncio.coroutine
     def post(self):
         yield from auth.forget(self.request)
