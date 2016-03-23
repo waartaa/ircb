@@ -156,6 +156,10 @@ class BaseStore(object):
     def get_task_id(self, data):
         return str(uuid1())
 
+    @classmethod
+    def fields(cls):
+        return [col.name for col in cls.model.__table__.columns]
+
 
 def init():
     global dispatcher
