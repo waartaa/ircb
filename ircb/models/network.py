@@ -81,8 +81,8 @@ class Network(Base):
 
     def to_dict(self):
         d = super().to_dict()
-        d['ssl_verify'] = self.ssl_verify if isinstance(
+        d['ssl_verify'] = self.ssl_verify and self.ssl_verify if isinstance(
             self.ssl_verify, str) else self.ssl_verify.code
-        d['status'] = self.status if isinstance(
-            self.status, str) else self.status.code
+        d['status'] = self.status and (
+            self.status if isinstance(self.status, str) else self.status.code)
         return d
