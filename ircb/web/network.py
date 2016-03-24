@@ -1,5 +1,4 @@
 import asyncio
-import json
 
 from aiohttp import web
 from aiohttp_auth.auth import get_auth
