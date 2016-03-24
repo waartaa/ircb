@@ -9,7 +9,7 @@ from aiohttp_session.cookie_storage import EncryptedCookieStorage
 
 from ircb.config import settings
 from ircb.web.user import SigninView, SignoutView
-from ircb.web.network import NetworkListView
+from ircb.web.network import NetworkListView, NetworkView
 
 logging.config.dictConfig(settings.LOGGING_CONF)
 
@@ -37,6 +37,8 @@ def init(loop):
     app.router.add_route('*', '/api/signout', SignoutView, name='signout')
     app.router.add_route('*', '/api/networks', NetworkListView,
                          name='networks')
+    app.router.add_route('*', '/api/network/{id}', NetworkView,
+                         name='network')
     srv = yield from loop.create_server(
         app.make_handler(), '0.0.0.0', 10001)
     return srv
