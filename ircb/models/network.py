@@ -79,10 +79,15 @@ class Network(Base):
     def create_access_token(self):
         return _create_access_token(self.user.id, self.name)
 
-    def to_dict(self):
+    def to_dict(self, serializable=False):
         d = super().to_dict()
-        d['ssl_verify'] = self.ssl_verify and self.ssl_verify if isinstance(
+        ssl_verify = self.ssl_verify and self.ssl_verify if isinstance(
             self.ssl_verify, str) else self.ssl_verify.code
-        d['status'] = self.status and (
+        status = self.status and (
             self.status if isinstance(self.status, str) else self.status.code)
+        d['ssl_verify'] = ssl_verify
+        d['status'] = status
+        if serializable:
+            d['created'] = self.created.timestamp()
+            d['last_updated'] = self.last_updated.timestamp()
         return d

@@ -9,7 +9,6 @@ from ircb.storeclient import UserStore, NetworkStore
 
 class NetworkListView(View):
     store = NetworkStore
-    datetime_fields = ['created', 'last_updated']
 
     @auth_required
     @asyncio.coroutine
@@ -48,7 +47,6 @@ class NetworkListView(View):
 
 class NetworkView(View):
     store = NetworkStore
-    datetime_fields = ['created', 'last_updated']
     w_fields = ['name', 'nickname', 'hostname', 'port', 'realname',
                 'username', 'password', 'usermode', 'ssl',
                 'ssl_verify']

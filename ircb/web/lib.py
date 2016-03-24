@@ -6,7 +6,6 @@ class View(web.View):
     store = None
     fields = None
     excluded_fields = []
-    datetime_fields = []
 
     __fields = None
 
@@ -34,13 +33,9 @@ class View(web.View):
         return json.dumps(result)
 
     def _serialize_row(self, row):
-        d = row.to_dict()
+        d = row.to_dict(serializable=True)
         result = {}
         fields = self.get_fields()
-        for dt_field in self.datetime_fields:
-            if dt_field in fields:
-                result[dt_field] = getattr(row, dt_field).timestamp()
-                fields.remove(dt_field)
         for field in fields:
             result[field] = d[field]
         return result
