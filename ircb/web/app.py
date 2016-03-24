@@ -33,11 +33,11 @@ def init(loop):
     app = web.Application(middlewares=middlewares)
     app.router.add_route('GET', '/', index)
 
-    app.router.add_route('*', '/api/signin', SigninView, name='signin')
-    app.router.add_route('*', '/api/signout', SignoutView, name='signout')
-    app.router.add_route('*', '/api/networks', NetworkListView,
+    app.router.add_route('*', '/api/v1/signin', SigninView, name='signin')
+    app.router.add_route('*', '/api/v1/signout', SignoutView, name='signout')
+    app.router.add_route('*', '/api/v1/networks', NetworkListView,
                          name='networks')
-    app.router.add_route('*', '/api/network/{id}', NetworkView,
+    app.router.add_route('*', '/api/v1/network/{id}', NetworkView,
                          name='network')
     srv = yield from loop.create_server(
         app.make_handler(), '0.0.0.0', 10001)
