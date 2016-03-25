@@ -5,6 +5,7 @@ SQLAlchemy==1.0.8
 SQLAlchemy-Utils==0.30.15
 irc3==0.8.3
 alembic==0.8.3
+WTForms-Alchemy==0.15.0
 click==6.2
 aioredis==0.2.4
 tabulate==0.7.5
