@@ -1,10 +1,12 @@
 import asyncio
+import json
 
 from aiohttp import web
 from aiohttp_auth.auth import get_auth
 from ircb.web.decorators import auth_required
 from ircb.web.lib import View
 from ircb.storeclient import UserStore, NetworkStore
+from ircb.forms import NetworkForm
 
 
 class NetworkListView(View):
@@ -26,21 +28,16 @@ class NetworkListView(View):
     def post(self):
         username = yield from get_auth(self.request)
         data = yield from self.request.post()
-        network = yield from NetworkStore.create(
-            dict(
-                user=username,
-                name=data['name'],
-                nickname=data['nickname'],
-                hostname=data['hostname'],
-                port=data['port'],
-                realname=data.get('realname') or '',
-                username=data.get('username') or '',
-                password=data.get('password') or '',
-                usermode=data.get('usermode') or '0',
-                ssl=True if data.get('ssl') == 'true' else False,
-                ssl_verify=data.get('ssl_verify') or 'CERT_NONE',
-            )
-        )
+        form = NetworkForm(**data)
+        form.validate()
+        if form.errors:
+            return web.Response(
+                body=json.dumps(form.errors).encode(),
+                status=400,
+                content_type='application/json')
+        cleaned_data = form.data
+        cleaned_data['user'] = username
+        network = yield from NetworkStore.create(**cleaned_data)
         return web.Response(body=self.serialize(network).encode(),
                             content_type='application/json')
 
