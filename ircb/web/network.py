@@ -96,3 +96,30 @@ class NetworkView(View, NetworkViewMixin):
             raise web.HTTPNotFound()
         resp = yield from self._create_or_update(data, username, networks[0])
         return resp
+
+
+class NetworkConnectionView(View):
+    store = NetworkStore
+
+    @auth_required
+    @asyncio.coroutine
+    def put(self):
+        network_id = self.request.match_info['id']
+        action = self.request.match_info['action']
+        if action not in ('connect', 'disconnect'):
+            raise web.HTTPNotFound()
+        username = yield from get_auth(self.request)
+        user = yield from UserStore.get(
+            dict(query=('username', username)))
+        networks = yield from NetworkStore.get(
+            dict(query={'user_id': user.id, 'id': network_id})
+        )
+        if not networks:
+            raise web.HTTPNotFound()
+        network = networks[0]
+        network = yield from NetworkStore.update(
+            dict(filter=('id', network.id),
+                 update={'status': '0' if action == 'connect' else '2'})
+        )
+        return web.Response(body=self.serialize(network).encode(),
+                            content_type='application/json')

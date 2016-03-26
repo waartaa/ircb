@@ -9,7 +9,8 @@ from aiohttp_session.cookie_storage import EncryptedCookieStorage
 
 from ircb.config import settings
 from ircb.web.user import SigninView, SignoutView
-from ircb.web.network import NetworkListView, NetworkView
+from ircb.web.network import (NetworkListView, NetworkView,
+                              NetworkConnectionView)
 
 logging.config.dictConfig(settings.LOGGING_CONF)
 
@@ -39,6 +40,9 @@ def init(loop):
                          name='networks')
     app.router.add_route('*', '/api/v1/network/{id}', NetworkView,
                          name='network')
+    app.router.add_route('PUT', '/api/v1/network/{id}/{action}',
+                         NetworkConnectionView,
+                         name='network_connection')
     srv = yield from loop.create_server(
         app.make_handler(), '0.0.0.0', 10001)
     return srv
