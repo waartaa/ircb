@@ -8,7 +8,7 @@ from aiohttp_session import get_session, session_middleware
 from aiohttp_session.cookie_storage import EncryptedCookieStorage
 
 from ircb.config import settings
-from ircb.web.user import SigninView, SignoutView
+from ircb.web.user import SigninView, SignoutView, SignupView
 from ircb.web.network import (NetworkListView, NetworkView,
                               NetworkConnectionView)
 
@@ -34,6 +34,7 @@ def init(loop):
     app = web.Application(middlewares=middlewares)
     app.router.add_route('GET', '/', index)
 
+    app.router.add_route('*', '/api/v1/signup', SignupView, name='signup')
     app.router.add_route('*', '/api/v1/signin', SigninView, name='signin')
     app.router.add_route('*', '/api/v1/signout', SignoutView, name='signout')
     app.router.add_route('*', '/api/v1/networks', NetworkListView,
