@@ -13,7 +13,21 @@ class BaseStore(object):
     DELETED_SIGNAL = None
     CREATE_OR_UPDATE_SIGNAL = None
 
+    callbacks = {
+        'create': set(),
+        'update': set(),
+        'delete': set()
+    }
+
     model = None
+
+    @classmethod
+    def initialize(cls):
+        signals = [cls.CREATED_SIGNAL, cls.UPDATED_SIGNAL, cls.DELETED_SIGNAL]
+        for signal in signals:
+            if signal is None:
+                continue
+            dispatcher.register(cls._on_message, signal=signal)
 
     @classmethod
     def get(cls, data):
@@ -119,8 +133,32 @@ class BaseStore(object):
         return fut.result()
 
     @classmethod
+    def on(cls, action, callback, remove=False):
+        if remove:
+            cls.callbacks[action].remove(callback)
+        else:
+            cls.callbacks[action].add(callback)
+
+    @classmethod
+    def _on_message(cls, signal, data, taskid=None):
+        callbacks = None
+        if signal == cls.CREATED_SIGNAL:
+            callbacks = cls.callbacks['create']
+        elif signal == cls.UPDATED_SIGNAL:
+            callbacks = cls.callbacks['update']
+        elif signal == cls.DELETED_SIGNAL:
+            callbacks = cls.callbacks['delete']
+        if callbacks:
+            for callback in callbacks:
+                callback(cls.model(**data))
+
+    @classmethod
     def get_task_id(self, data):
         return str(uuid1())
+
+    @classmethod
+    def fields(cls):
+        return [col.name for col in cls.model.__table__.columns]
 
 
 def init():

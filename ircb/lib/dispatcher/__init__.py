@@ -13,6 +13,8 @@ class Handler(aiozmq.rpc.AttrHandler):
 
     def __init__(self, dispatcher):
         self._dispatcher = dispatcher
+        # lock for registering subscriber
+        self._lock = asyncio.Lock()
 
     @aiozmq.rpc.method
     def send(self, signal, data, taskid=None):
@@ -29,11 +31,18 @@ class Handler(aiozmq.rpc.AttrHandler):
     @asyncio.coroutine
     @aiozmq.rpc.method
     def register_sub(self, subscriber_addr, key):
-        connections = self._dispatcher.publisher.transport.connections()
-        if subscriber_addr in connections:
-            return
-        self._dispatcher.publisher.transport.connect(subscriber_addr)
-        yield from self._dispatcher.redis.set(key, 1)
+        yield from self._lock.acquire()
+        try:
+            connections = self._dispatcher.publisher.transport.connections()
+            if subscriber_addr in connections:
+                self._lock.release()
+                return
+            self._dispatcher.publisher.transport.connect(subscriber_addr)
+            redis = yield from aioredis.create_redis((settings.REDIS_HOST, settings.REDIS_PORT))
+            yield from redis.set(key, 1)
+            redis.close()
+        finally:
+            self._lock.release()
 
 
 class Dispatcher(object):
@@ -48,20 +57,22 @@ class Dispatcher(object):
         self.queue = asyncio.Queue(loop=self.loop)
         asyncio.Task(self.lock.acquire())
         asyncio.Task(self.setup_pubsub())
-        asyncio.Task(self.process_queue())
 
     @asyncio.coroutine
     def process_queue(self):
         while True:
             while self.lock.locked():
-                yield from asyncio.sleep(0.1)
+                yield from asyncio.sleep(0.01)
                 continue
-            (signal, data, taskid) = yield from self.queue.get()
-            yield from self._send(signal, data, taskid)
+            try:
+                (signal, data, taskid) = self.queue.get_nowait()
+                yield from self._send(signal, data, taskid)
+            except asyncio.QueueEmpty:
+                break
 
     @asyncio.coroutine
     def setup_pubsub(self):
-        self.redis = yield from aioredis.create_redis((settings.REDIS_HOST, settings.REDIS_PORT))
+        redis = yield from aioredis.create_redis((settings.REDIS_HOST, settings.REDIS_PORT))
         if self.role == 'stores':
             bind_addr = settings.SUBSCRIBER_ENDPOINTS[self.role]
         else:
@@ -77,12 +88,13 @@ class Dispatcher(object):
                 settings.SUBSCRIBER_ENDPOINTS['stores'])
             _key = 'SUBSCRIBER_REGISTERED_{}'.format(subscriber_addr)
             ret = 0
-            yield from self.redis.set(_key, ret)
+            yield from redis.set(_key, ret)
             while ret != b'1':
                 yield from self.publisher.publish('register_sub').register_sub(subscriber_addr, _key)
-                ret = yield from self.redis.get(_key)
-                yield from asyncio.sleep(1)
+                ret = yield from redis.get(_key)
+                yield from asyncio.sleep(0.01)
         self.lock.release()
+        redis.close()
 
     @property
     def subscriber_endpoints(self):
@@ -91,7 +103,14 @@ class Dispatcher(object):
                 if role != self.role]
 
     def send(self, signal, data, taskid=None):
-        asyncio.Task(self.queue.put((signal, data, taskid)))
+        asyncio.Task(self.enqueue((signal, data, taskid)))
+
+    @asyncio.coroutine
+    def enqueue(self, data):
+        empty = self.queue.empty()
+        yield from self.queue.put(data)
+        if empty:
+            asyncio.Task(self.process_queue())
 
     @asyncio.coroutine
     def _send(self, signal, data, taskid=None):
@@ -110,9 +129,4 @@ class Dispatcher(object):
                 e, callback, signal), exc_info=True)
 
     def run_forever(self):
-        @asyncio.coroutine
-        def coro():
-            while self.subscriber is None:
-                yield from asyncio.sleep(1)
-            yield from self.subscriber.wait_closed() 
-        self.loop.run_until_complete(coro())
+        self.loop.run_forever()

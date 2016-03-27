@@ -22,8 +22,8 @@ class User(Base, UserMixin):
 
     # User information
     active = Column('is_active', Boolean(), nullable=False, server_default='0')
-    first_name = Column(Unicode(50), nullable=False, server_default=u'')
-    last_name = Column(Unicode(50), nullable=False, server_default=u'')
+    first_name = Column(Unicode(50), nullable=True, server_default=u'')
+    last_name = Column(Unicode(50), nullable=True, server_default=u'')
 
     # Relationships
     roles = relationship('Role', secondary='users_roles',
@@ -38,6 +38,11 @@ class User(Base, UserMixin):
         d.pop('password')
         d['is_active'] = self.is_active()
         return d
+
+    def authenticate(self, password):
+        if self.password == password:
+            return True
+        return False
 
 
 class Role(Base):
