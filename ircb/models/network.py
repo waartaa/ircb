@@ -29,7 +29,7 @@ def _create_access_token(user_id, network_name):
     return md5('{}{}{}{}'.format(settings.SECRET_KEY,
                                  user.username,
                                  network_name,
-                                 sa.DateTime.sa.DateTime.utcnow()).encode()
+                                 datetime.datetime.utcnow()).encode()
                ).hexdigest()
 
 
