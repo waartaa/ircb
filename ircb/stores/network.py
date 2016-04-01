@@ -26,7 +26,7 @@ class NetworkStore(BaseStore):
         elif isinstance(query, tuple):
             key, value = query
             return session.query(Network).filter(
-                getattr(Network, key) == value).first()
+                getattr(Network, key) == value).one_or_none()
         else:
             return session.query(Network).get(query)
 
@@ -45,7 +45,9 @@ class NetworkStore(BaseStore):
         return network
 
     @classmethod
-    def update(cls, filter, update={}):
+    def update(cls, filter, update=None):
+        if update is None:
+            update = {}
         network = session.query(Network).filter(
             getattr(Network, filter[0]) == filter[1]).one()
         for key, value in update.items():
