@@ -5,6 +5,7 @@ from ircb.models import User
 
 
 class UserForm(ModelForm):
+
     class Meta:
         model = User
         only = [

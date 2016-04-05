@@ -7,6 +7,7 @@ from ircb.models.network import SSL_VERIFY_CHOICES
 
 
 class NetworkForm(ModelForm):
+
     class Meta:
         model = Network
         exclude = [

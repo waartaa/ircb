@@ -40,7 +40,9 @@ class Handler(aiozmq.rpc.AttrHandler):
                 self._lock.release()
                 return
             self._dispatcher.publisher.transport.connect(subscriber_addr)
-            redis = yield from aioredis.create_redis((settings.REDIS_HOST, settings.REDIS_PORT))
+            redis = yield from aioredis.create_redis(
+                (settings.REDIS_HOST, settings.REDIS_PORT)
+            )
             yield from redis.set(key, 1)
             redis.close()
         finally:
@@ -74,7 +76,9 @@ class Dispatcher(object):
 
     @asyncio.coroutine
     def setup_pubsub(self):
-        redis = yield from aioredis.create_redis((settings.REDIS_HOST, settings.REDIS_PORT))
+        redis = yield from aioredis.create_redis(
+            (settings.REDIS_HOST, settings.REDIS_PORT)
+        )
         if self.role == 'stores':
             bind_addr = settings.SUBSCRIBER_ENDPOINTS[self.role]
         else:
@@ -92,7 +96,11 @@ class Dispatcher(object):
             ret = 0
             yield from redis.set(_key, ret)
             while ret != b'1':
-                yield from self.publisher.publish('register_sub').register_sub(subscriber_addr, _key)
+                yield from self.publisher.publish(
+                    'register_sub'
+                ).register_sub(
+                    subscriber_addr, _key
+                )
                 ret = yield from redis.get(_key)
                 yield from asyncio.sleep(0.01)
         self.lock.release()
@@ -116,7 +124,8 @@ class Dispatcher(object):
 
     @asyncio.coroutine
     def _send(self, signal, data, taskid=None):
-        logger.debug('PUBLISH from %s: %s' % (self.role, (signal, data, taskid)))
+        logger.debug('PUBLISH from %s: %s' %
+                     (self.role, (signal, data, taskid)))
         yield from self.publisher.publish(signal).send(signal, data, taskid)
 
     def register(self, callback, signal=None):

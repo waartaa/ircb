@@ -41,4 +41,3 @@ class View(web.View):
         for field in fields:
             result[field] = d[field]
         return result
-

@@ -137,23 +137,23 @@ class BaseStore(object):
         return row.to_dict()
 
     @classmethod
-    def get(self, *args, **kwargs):
+    def get(cls, *args, **kwargs):
         raise NotImplementedError
 
     @classmethod
-    def create(self, *args, **kwargs):
+    def create(cls, *args, **kwargs):
         raise NotImplementedError
 
     @classmethod
-    def update(self, *args, **kwargs):
+    def update(cls, *args, **kwargs):
         raise NotImplementedError
 
     @classmethod
-    def delete(self, *args, **kwargs):
+    def delete(cls, *args, **kwargs):
         raise NotImplementedError
 
     @classmethod
-    def create_or_update(self, *args, **kwargs):
+    def create_or_update(cls, *args, **kwargs):
         raise NotImplementedError
 
 

@@ -40,4 +40,3 @@ def auth_required(func):
         return await func(*args)
 
     return wrapper
-
