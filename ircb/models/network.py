@@ -61,7 +61,8 @@ class Network(Base):
 
     # Runtime fields
     current_nickname = sa.Column(sa.String(20), nullable=True)
-    status = sa.Column(ChoiceType(NETWORK_STATUS_TYPES))
+    status = sa.Column(ChoiceType(NETWORK_STATUS_TYPES),
+                       default=Choice(*NETWORK_STATUS_TYPES[3]))
 
     # Remote socket info
     rhost = sa.Column(sa.String(100), nullable=True)
