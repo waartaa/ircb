@@ -91,7 +91,7 @@ def disconnect(id):
     )
 
 
-network_cli.add_command(network_create)
+network_cli.add_command(create)
 network_cli.add_command(ls)
 network_cli.add_command(connect)
 network_cli.add_command(disconnect)
