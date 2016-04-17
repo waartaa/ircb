@@ -1,6 +1,6 @@
+# -*- coding: utf-8 -*-
 import asyncio
 import logging
-import logging.config
 
 from aiohttp import web
 from aiohttp_auth import auth
@@ -9,10 +9,11 @@ from aiohttp_session.cookie_storage import EncryptedCookieStorage
 
 from ircb.config import settings
 from ircb.web.user import SigninView, SignoutView, SignupView
-from ircb.web.network import (NetworkListView, NetworkView,
-                              NetworkConnectionView)
+from ircb.web.network import NetworkListView, NetworkView
+from ircb.web.network import NetworkConnectionView
+from ircb.utils.config import load_config
 
-logging.config.dictConfig(settings.LOGGING_CONF)
+logger = logging.getLogger('aiohttp.access')
 
 
 @asyncio.coroutine
@@ -24,6 +25,7 @@ def index(request):
 def init(loop):
     from ircb.storeclient import initialize
     initialize()
+    load_config()
     policy = auth.SessionTktAuthentication(
         settings.WEB_SALT, 60, include_ip=True)
     middlewares = [
@@ -45,7 +47,7 @@ def init(loop):
                          NetworkConnectionView,
                          name='network_connection')
     srv = yield from loop.create_server(
-        app.make_handler(), '0.0.0.0', 10001)
+        app.make_handler(logger=logger, access_log=logger), '0.0.0.0', 10001)
     return srv
 
 if __name__ == '__main__':

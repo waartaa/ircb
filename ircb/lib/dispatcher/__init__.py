@@ -1,8 +1,10 @@
+# -*- coding: utf-8 -*-
 import asyncio
 import aiozmq.rpc
 import aioredis
-from collections import defaultdict
 import logging
+
+from collections import defaultdict
 
 from ircb.config import settings
 

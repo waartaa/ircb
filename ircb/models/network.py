@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
-
 import datetime
+
 from hashlib import md5
 
 import sqlalchemy as sa
+
 from sqlalchemy_utils import ChoiceType, Choice
 
 from ircb.models.lib import Base, get_session

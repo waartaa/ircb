@@ -1,8 +1,10 @@
+# -*- coding: utf-8 -*-
 import asyncio
 import json
 
 from aiohttp import web, MultiDict
 from aiohttp_auth.auth import get_auth
+
 from ircb.web.decorators import auth_required
 from ircb.web.lib import View
 from ircb.storeclient import UserStore, NetworkStore

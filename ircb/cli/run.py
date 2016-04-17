@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 import click
-import logging
-import logging.config
-from ircb.config import settings
+
 from ircb.bouncer import runserver
+from ircb.config import settings
 
 
 @click.group(name='run')
@@ -27,7 +26,6 @@ def run_server(host, port, mode):
 
 @click.command(name='stores')
 def run_stores():
-    logging.config.dictConfig(settings.LOGGING_CONF)
     import ircb.stores
     import ircb.stores.base
     ircb.stores.initialize()

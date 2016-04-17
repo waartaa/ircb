@@ -1,6 +1,8 @@
-from ircb.lib.constants.signals import (
-    STORE_USER_CREATE, STORE_USER_CREATED,
-    STORE_USER_GET, STORE_USER_GOT)
+# -*- coding: utf-8 -*-
+from ircb.lib.constants.signals import (STORE_USER_CREATE,
+                                        STORE_USER_CREATED,
+                                        STORE_USER_GET,
+                                        STORE_USER_GOT)
 from ircb.models import get_session, User
 from ircb.stores.base import BaseStore
 

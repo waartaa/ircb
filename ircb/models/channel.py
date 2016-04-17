@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
-
 import datetime
 
-from sqlalchemy import (Column, String, Integer, ForeignKey, DateTime,
-                        UniqueConstraint)
+from sqlalchemy import Column, String, Integer, ForeignKey, DateTime
+from sqlalchemy import UniqueConstraint
 from sqlalchemy_utils import ChoiceType
 
 from ircb.config import settings

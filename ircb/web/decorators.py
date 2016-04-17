@@ -1,4 +1,6 @@
+# -*- coding: utf-8 -*-
 from functools import wraps
+
 from aiohttp import web
 from aiohttp_auth.auth import get_auth
 

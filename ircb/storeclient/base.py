@@ -1,4 +1,6 @@
+# -*- coding: utf-8 -*-
 import asyncio
+
 from uuid import uuid1
 
 from ircb.lib.dispatcher import Dispatcher

@@ -3,8 +3,8 @@ import click
 
 from tabulate import tabulate
 
-from ircb.storeclient import NetworkStore
 from ircb.lib.async import coroutinize
+from ircb.storeclient import NetworkStore
 
 
 @click.group(name='networks')

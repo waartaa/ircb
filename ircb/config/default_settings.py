@@ -23,6 +23,11 @@ LOGGING_CONF = dict(
         }
     ),
     loggers=dict(
+        ircb={
+            "level": "DEBUG",
+            "propagate": False,
+            "handlers": ["console"],
+        },
         network={
             "level": "DEBUG",
             "propagate": False,
@@ -44,6 +49,11 @@ LOGGING_CONF = dict(
             "handlers": ["console"],
         },
         irc={
+            "level": "DEBUG",
+            "propagate": False,
+            "handlers": ["console"],
+        },
+        aiohttp={
             "level": "DEBUG",
             "propagate": False,
             "handlers": ["console"],

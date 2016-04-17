@@ -3,8 +3,7 @@ import click
 import yaml
 
 from ircb.lib.async import coroutinize
-from ircb.storeclient import UserStore
-from ircb.storeclient import NetworkStore
+from ircb.storeclient import NetworkStore, UserStore
 
 
 @click.group(name='users')
@@ -13,7 +12,7 @@ def loaddata_cli():
     pass
 
 
-def validate_yaml(f): 
+def validate_yaml(f):
     "Validates YAML file"
     return True
 
@@ -25,7 +24,7 @@ def load_data(f):
     with open(f, 'r') as f:
         config = yaml.load(f)
 
-        if validate_yaml(config): 
+        if validate_yaml(config):
 
             for user in config.keys():
                 user_data = config[user]

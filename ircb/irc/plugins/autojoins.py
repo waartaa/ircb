@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 import irc3
 from irc3.plugins.autojoins import AutoJoins as Irc3AutoJoins
 
