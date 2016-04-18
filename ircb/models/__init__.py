@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from .network import Network
 from .user import User
 from .channel import Channel

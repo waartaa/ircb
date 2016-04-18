@@ -1,7 +1,10 @@
-from ircb.lib.constants.signals import (
-    STORE_NETWORK_CREATE, STORE_NETWORK_CREATED,
-    STORE_NETWORK_UPDATE, STORE_NETWORK_UPDATED,
-    STORE_NETWORK_GET, STORE_NETWORK_GOT)
+# -*- coding: utf-8 -*-
+from ircb.lib.constants.signals import (STORE_NETWORK_CREATE,
+                                        STORE_NETWORK_CREATED,
+                                        STORE_NETWORK_UPDATE,
+                                        STORE_NETWORK_UPDATED,
+                                        STORE_NETWORK_GET,
+                                        STORE_NETWORK_GOT)
 from ircb.models import get_session, User, Network
 from ircb.stores.base import BaseStore
 

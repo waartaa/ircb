@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from wtforms_alchemy import ModelForm
 
 from ircb.models import User

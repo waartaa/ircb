@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-
 import datetime
-from sqlalchemy import (Column, String, Integer, ForeignKey, DateTime,
-                        UniqueConstraint)
+
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy import UniqueConstraint
 
 from ircb.models.lib import Base
 

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from ircb.models import Client
 from ircb.storeclient.base import BaseStore
 from ircb.lib.constants.signals import (STORE_CLIENT_CREATE,

@@ -1,14 +1,16 @@
+# -*- coding: utf-8 -*-
 import asyncio
-from collections import defaultdict
 import logging
-import logging.config
-from ircb.connection import Connection
-import ircb.stores
-from ircb.config import settings
-from ircb.storeclient import (NetworkStore, ClientStore, ChannelStore,
-                              UserStore, initialize as storeclient_initialize)
-from ircb.irc import IrcbBot
 
+from collections import defaultdict
+
+import ircb.stores
+
+from ircb.config import settings
+from ircb.connection import Connection
+from ircb.irc import IrcbBot
+from ircb.storeclient import initialize as storeclient_initialize
+from ircb.storeclient import ChannelStore, ClientStore, NetworkStore, UserStore
 
 logger = logging.getLogger('bouncer')
 
@@ -250,7 +252,6 @@ class Bouncer(object):
 
 
 def runserver(host='0.0.0.0', port=9000, mode='allinone'):
-    logging.config.dictConfig(settings.LOGGING_CONF)
     if mode == 'allinone':
         ircb.stores.initialize()
     storeclient_initialize()

@@ -1,9 +1,11 @@
 import datetime
+
 from flask_user import UserMixin
-from sqlalchemy import (Column, String, Unicode, Boolean, ForeignKey, Integer,
-                        DateTime)
+from sqlalchemy import Column, String, Unicode, Boolean, ForeignKey, Integer
+from sqlalchemy import DateTime
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy_utils import PasswordType
+
 from ircb.models.lib import Base
 
 

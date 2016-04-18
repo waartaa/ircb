@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
+import logging
+
 from ircb.lib.dispatcher import Dispatcher
 from ircb.models.lib import Base
-
-import logging
 
 logger = logging.getLogger('stores')
 
