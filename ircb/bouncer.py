@@ -43,6 +43,7 @@ class BouncerServerClientProtocol(Connection):
             verb = tokens[0]
             if verb == "QUIT":
                 pass
+
             elif verb == "PASS":
                 message = tokens[1]
                 access_token = message.split(" ")[0]
