@@ -3,27 +3,21 @@
 
 A versatile IRC bouncer.
 
+## Requirements
+
+- Python3.5
+- Pip3.5
+
 
 ## Setup
 
-If you want to set up `ircb` for development purpose. Follow the given steps
-
-- Install Python3 and Python3 development packages for your distro, if not already there. In Fedora, it'd be:  
-``sudo dnf install -y python3 python3-devel python3-pip python-virtualenvwrapper``
-
-- Create a Python3 virtualenv:  
-``mkvirtualenv ircb --no-site-packages -p /usr/bin/python3``
-
-- Activate the virtualenv `ircb`:  
-``workon ircb``
-
-- Install dependencies:  
-``pip3 install -r requirements.txt``
+- Install dependencies:
+``[sudo] pip3.5 install -r requirements.txt``
 
 - Copy and extend ``ircb/config/default_settings.py``, as needed, to a custom location. say, ``/etc/ircb/settings.py``.
 - [OPTIONAL] ``export IRCB_SETTINGS=<path to your custom settings file>``
 
-- Install the project as a development dep ``python3 setup.py develop``
+- Install the project as a development dep ``python3.5 setup.py develop``
 
 ## Setting up data
 - Creating a user:
@@ -43,12 +37,17 @@ If you want to set up `ircb` for development purpose. Follow the given steps
 ### Quickstart
 ```
 ircb run server
+ircb run web
 ```
 
 ### Advanced
 
+You can run the various components of ``ircb``: ``stores``, ``bouncers`` as
+different processes.
+
 - Run stores as a different process: ``ircb run stores``
-- Run bouncer: ``irc run server``
+- Run bouncer: ``ircb run server -m bouncer``
+- Run web server: ``ircb run web``
 
 ## Connecting for IRC client
 
