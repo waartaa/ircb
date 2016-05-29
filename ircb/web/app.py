@@ -22,7 +22,7 @@ def index(request):
 
 
 @asyncio.coroutine
-def init(loop):
+def init(loop, host='0.0.0.0', port=10000):
     from ircb.storeclient import initialize
     initialize()
     load_config()
@@ -50,10 +50,14 @@ def init(loop):
         app.make_handler(logger=logger, access_log=logger), '0.0.0.0', 10001)
     return srv
 
-if __name__ == '__main__':
+
+def runserver(host='0.0.0.0', port=10000):
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(init(loop))
+    loop.run_until_complete(init(loop, host=host, port=port))
     try:
         loop.run_forever()
     except KeyboardInterrupt:
         pass
+
+if __name__ == '__main__':
+    runserver()
