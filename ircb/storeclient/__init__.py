@@ -6,6 +6,7 @@ from .client import ClientStore
 from .channel import ChannelStore
 from .user import UserStore
 from .base import init
+from .logs import MessageLogStore, ActivityLogStore
 
 
 def initialize():
@@ -18,5 +19,7 @@ __all__ = [
     'NetworkStore',
     'ChannelStore',
     'UserStore',
+    'MessageLogStore',
+    'ActivityLogStore',
     'initialize'
 ]

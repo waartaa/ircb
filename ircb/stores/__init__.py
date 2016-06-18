@@ -7,6 +7,7 @@ from .network import NetworkStore
 from .client import ClientStore
 from .channel import ChannelStore
 from .user import UserStore
+from .logs import MessageLogStore, ActivityLogStore
 from .base import init
 
 
@@ -17,10 +18,14 @@ def initialize():
     ClientStore.initialize()
     ChannelStore.initialize()
     UserStore.initialize()
+    MessageLogStore.initialize()
+    ActivityLogStore.initialize()
 
 __all__ = [
     'ClientStore',
     'NetworkStore',
     'ChannelStore',
-    'UserStore'
+    'UserStore',
+    'MessageLogStore',
+    'ActivityLogStore'
 ]
