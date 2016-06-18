@@ -139,6 +139,7 @@ class Bouncer(object):
             })
             config = dict(
                 id=network.id,
+                user_id=user.id,
                 name=network.name,
                 userinfo=network.username,
                 password=network.password,
