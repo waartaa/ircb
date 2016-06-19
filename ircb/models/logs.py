@@ -23,6 +23,13 @@ class BaseLog(object):
     last_updated = sa.Column(sa.DateTime,
                              default=datetime.datetime.utcnow)
 
+    def to_dict(self, serializable=False):
+        d = super().to_dict()
+        if serializable:
+            d['timestamp'] = self.timestamp.timestamp()
+            d['created'] = self.created.timestamp()
+            d['last_updated'] = self.last_updated.timestamp()
+
 
 class MessageLog(Base, BaseLog):
     """
