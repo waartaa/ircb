@@ -80,9 +80,12 @@ class IrcbBot(irc3.IrcBot):
             userinfo='{userinfo}',
             time='{now:%c}'
         ),
-        includes=['ircb.irc.plugins.ircb', 'ircb.irc.plugins.autojoins'],
-        connection=IrcbIrcConnection
+        includes=['ircb.irc.plugins.ircb', 'ircb.irc.plugins.autojoins',
+                  'ircb.irc.plugins.logger'],
+        connection=IrcbIrcConnection,
     )
+    defaults['irc3.plugins.logger'] = {
+        'handler': 'ircb.irc.plugins.logger.StoreHandler'}
     cmd_regex = re.compile(
         r'(?P<cmd>[A-Z]+)(?:\s+(?P<args>[^\:]+))?(?:\s*\:(?P<msg>.*))?')
 
