@@ -39,7 +39,6 @@ class StoreHandler(object):
             mask=str(event['mask']),
             user_id=self.bot.config.get('user_id')
         ))
-        pass
 
 
 @irc3.plugin

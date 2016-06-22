@@ -12,6 +12,7 @@ from .logs import MessageLogStore, ActivityLogStore
 def initialize():
     init()
     NetworkStore.initialize()
+    MessageLogStore.initialize()
 
 
 __all__ = [
