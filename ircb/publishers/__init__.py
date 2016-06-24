@@ -83,15 +83,18 @@ class MessageLogPublisher(object):
         Check if an insert operation in message_logs table affects our
         results. If yes, append it to results.
         """
+        skip = False
         if self.skip(data):
-            return
+            skip = skip or True
         if self.results and data['timestamp'] < self.index[
                 self.results[-1]]['timestamp']:
-            return
+            skip = skip or True
         if not self.fetched:
+            skip = skip or True
+        if skip:
+            logger.debug('skip created data', data)
             return
 
-        logger.debug('skip created data', data)
         self.index[data['id']] = data
         self.results.append(data['id'])
         logger.debug('updated results: %s, %s', self.results, self.index)
