@@ -105,8 +105,8 @@ class MessageLogPublisher(object):
         is not relevant to us.
         """
         return data['user_id'] != self.user_id or \
-            data['hostname'] != self.hostname or \
-            data['roomname'] != self.roomname
+            data['roomname'] != self.roomname or \
+            data['hostname'] != self.hostname
 
 
 if __name__ == '__main__':
