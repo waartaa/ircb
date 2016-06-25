@@ -28,6 +28,7 @@ class MessageLogPublisher(object):
         self.user_id = user_id
         self.limit = limit
         self.results = deque(maxlen=self.limit)
+        self.results_count = 0
         self.index = {}
         self.fields = []
         self.fetched = False
@@ -64,6 +65,7 @@ class MessageLogPublisher(object):
         for result in results:
             self.index[result['id']] = result
             self.results.append(result['id'])
+            self.results_count += 1
         logger.debug('normalized index: %s', self.index)
         logger.debug('normalized results: %s', self.results)
 
@@ -94,6 +96,12 @@ class MessageLogPublisher(object):
         if skip:
             logger.debug('skip created data', data)
             return
+
+        if self.results_count == self.limit:
+            logger.debug('Removing id: %s from index', self.results[0])
+            self.index.pop(self.results[0], None)
+        else:
+            self.results_count += 1
 
         self.index[data['id']] = data
         self.results.append(data['id'])
