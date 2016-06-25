@@ -21,6 +21,12 @@ class BaseStore(object):
         'delete': set()
     }
 
+    raw_callbacks = {
+        'create': set(),
+        'update': set(),
+        'delete': set()
+    }
+
     model = None
 
     @classmethod
@@ -32,12 +38,15 @@ class BaseStore(object):
             dispatcher.register(cls._on_message, signal=signal)
 
     @classmethod
-    def get(cls, data):
+    def get(cls, data, raw=False):
         result = yield from cls._get(data)
         if isinstance(result, dict):
-            result = cls.model(**result)
+            result = cls.model(**result) if raw is False else result
         elif isinstance(result, tuple):
-            result = [cls.model(**item) for item in result]
+            if raw:
+                result = result
+            else:
+                result = [cls.model(**item) for item in result]
         return result
 
     @classmethod
@@ -135,24 +144,32 @@ class BaseStore(object):
         return fut.result()
 
     @classmethod
-    def on(cls, action, callback, remove=False):
+    def on(cls, action, callback, remove=False, raw=False):
+        callbacks = cls.raw_callbacks if raw else cls.callbacks
         if remove:
-            cls.callbacks[action].remove(callback)
+            callbacks[action].remove(callback)
         else:
-            cls.callbacks[action].add(callback)
+            callbacks[action].add(callback)
 
     @classmethod
     def _on_message(cls, signal, data, taskid=None):
         callbacks = None
+        raw_callbacks = None
         if signal == cls.CREATED_SIGNAL:
             callbacks = cls.callbacks['create']
+            raw_callbacks = cls.raw_callbacks['create']
         elif signal == cls.UPDATED_SIGNAL:
             callbacks = cls.callbacks['update']
+            raw_callbacks = cls.raw_callbacks['update']
         elif signal == cls.DELETED_SIGNAL:
             callbacks = cls.callbacks['delete']
+            raw_callbacks = cls.raw_callbacks['delete']
         if callbacks:
             for callback in callbacks:
                 callback(cls.model(**data))
+        if raw_callbacks:
+            for callback in raw_callbacks:
+                callback(data)
 
     @classmethod
     def get_task_id(self, data):

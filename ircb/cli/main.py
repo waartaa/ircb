@@ -6,6 +6,7 @@ from ircb.cli.run import run_cli
 from ircb.cli.user import user_cli
 from ircb.utils.config import load_config
 
+
 @click.group()
 def cli():
     """ircb CLI"""

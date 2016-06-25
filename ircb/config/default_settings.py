@@ -57,6 +57,11 @@ LOGGING_CONF = dict(
             "level": "DEBUG",
             "propagate": False,
             "handlers": ["console"],
+        },
+        publisher={
+            "level": "DEBUG",
+            "propagate": False,
+            "handlers": ["console"],
         }
     ),
 )
