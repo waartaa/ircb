@@ -34,7 +34,7 @@ class MessageLogStore(BaseStore):
 
     @classmethod
     def get(cls, filter=None, order_by=None, limit=30, sort='timestamp'):
-        qs = session.query(MessageLog)
+        qs = session.query(MessageLog.id)
         if filter:
             for key, value in filter.items():
                 qs = qs.filter(getattr(MessageLog, key) == value)
@@ -47,7 +47,9 @@ class MessageLogStore(BaseStore):
                     qs = qs.order_by(getattr(MessageLog, item))
 
         qs = qs.limit(limit)
-        return sorted(qs.all(), key=lambda item: getattr(item, 'timestamp'))
+        return session.query(MessageLog).\
+            filter(MessageLog.id.in_(qs.subquery())).\
+            order_by(MessageLog.timestamp).all()
 
 
 class ActivityLogStore(BaseStore):
