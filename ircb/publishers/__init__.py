@@ -34,7 +34,8 @@ class MessageLogPublisher(object):
         self.fetched = False
         self.callbacks = {
             'update': set(),
-            'create': set()
+            'create': set(),
+            'fetch': set()
         }
         MessageLogStore.on('create', self.handle_create,
                            raw=True)
@@ -71,6 +72,8 @@ class MessageLogPublisher(object):
         }, raw=True)
         logger.debug('fetched: %s', results)
         self.normalize(results)
+        for callback in self.callbacks.get('fetch') or set():
+            callback(results)
         self.fetched = True
 
     def normalize(self, results):
