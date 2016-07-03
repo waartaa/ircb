@@ -32,9 +32,21 @@ class MessageLogPublisher(object):
         self.index = {}
         self.fields = []
         self.fetched = False
+        self.callbacks = {
+            'update': set(),
+            'create': set()
+        }
         MessageLogStore.on('create', self.handle_create,
                            raw=True)
         asyncio.Task(self.fetch())
+
+    def on(self, event, callback):
+        """
+        Register callbacks for an event.
+        """
+        callbacks = self.callbacks.get(event)
+        if callbacks:
+            callbacks.add(callback)
 
     @property
     def signature(self):
@@ -80,6 +92,9 @@ class MessageLogPublisher(object):
         if data['id'] in self.index:
             self.index[data['id']] = data
 
+        for callback in self.callbacks.get('update') or set():
+            callback(data)
+
     def handle_create(self, data):
         """
         Check if an insert operation in message_logs table affects our
@@ -106,6 +121,8 @@ class MessageLogPublisher(object):
         self.index[data['id']] = data
         self.results.append(data['id'])
         logger.debug('updated results: %s, %s', self.results, self.index)
+        for callback in self.callbacks.get('create') or set():
+            callback(data)
 
     def skip(self, data):
         """
