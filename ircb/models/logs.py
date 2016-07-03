@@ -25,13 +25,13 @@ class BaseLog(object):
 
     def to_dict(self, serializable=False):
         d = super().to_dict()
-        if serializable:
-            d['timestamp'] = self.timestamp.timestamp()
-            d['created'] = self.created.timestamp()
-            d['last_updated'] = self.last_updated.timestamp()
+        d['timestamp'] = self.timestamp.timestamp()
+        d['created'] = self.created.timestamp()
+        d['last_updated'] = self.last_updated.timestamp()
+        return d
 
 
-class MessageLog(Base, BaseLog):
+class MessageLog(BaseLog, Base):
     """
     Network/Channel/PM messages
     """
@@ -41,7 +41,7 @@ class MessageLog(Base, BaseLog):
     from_user_id = sa.Column(sa.Integer, nullable=True, default=None)
 
 
-class ActivityLog(Base, BaseLog):
+class ActivityLog(BaseLog, Base):
     """
     Channel activity(join, part, quit) logs
     """
