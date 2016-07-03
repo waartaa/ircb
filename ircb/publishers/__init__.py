@@ -45,7 +45,7 @@ class MessageLogPublisher(object):
         Register callbacks for an event.
         """
         callbacks = self.callbacks.get(event)
-        if callbacks:
+        if callbacks is not None:
             callbacks.add(callback)
 
     @property
@@ -69,7 +69,7 @@ class MessageLogPublisher(object):
             # 'fields': self.fields,
             'sort': 'timestamp'
         }, raw=True)
-        logger.debug('fetched', results)
+        logger.debug('fetched: %s', results)
         self.normalize(results)
         self.fetched = True
 
