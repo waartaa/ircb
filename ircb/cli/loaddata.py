@@ -40,14 +40,14 @@ def load_data(f):
                     net_data = networks[net]
                     network = yield from NetworkStore.create(
                         dict(
-                            user=user,
+                            user_username=user,
                             name=net,
                             nickname=net_data["nick"],
                             hostname=net_data["host"],
                             port=net_data["port"],
                             realname=net_data["realname"],
                             username=net_data["username"],
-                            password=net_data["password"],
+                            network_password=net_data["password"],
                             usermode=net_data["usermode"],
                         )
                     )
