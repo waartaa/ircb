@@ -34,13 +34,13 @@ def create(user, network_name, host, port, nick, realname, username, password,
     """Create a network for a user"""
     network = yield from NetworkStore.create(
         dict(
-            user=user,
+            user_username=user,
             name=network_name,
             nickname=nick,
             hostname=host,
             port=port,
             realname=realname,
-            username=username,
+            network_username=username,
             password=password,
             usermode=usermode,
             ssl=ssl,
