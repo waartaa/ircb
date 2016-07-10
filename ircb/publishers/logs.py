@@ -26,15 +26,11 @@ class MessageLogPublisher(BasePublisher):
     store = MessageLogStore
 
     def __init__(self, hostname, roomname, user_id, limit=30):
-        super().__init__()
+        self.limit = limit
         self.hostname = hostname
         self.roomname = roomname
         self.user_id = user_id
-        self.limit = limit
-        self.results = deque(maxlen=self.limit)
-        self.results_count = 0
-        self.index = {}
-        self.fields = []
+        super().__init__()
 
     @property
     def id(self):

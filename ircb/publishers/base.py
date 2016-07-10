@@ -2,6 +2,7 @@
 
 import asyncio
 import logging
+from collections import deque
 
 logger = logging.getLogger('publisher')
 
@@ -11,13 +12,19 @@ class BasePublisher(object):
     store = None
     name = None
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self):
         self.fetched = False
         self.callbacks = {
             'update': set(),
             'create': set(),
             'fetch': set()
         }
+        self.limit = None
+        self.results = deque(maxlen=self.limit) if self.limit else \
+            deque()
+        self.results_count = 0
+        self.fields = []
+        self.index = {}
 
     @property
     def id(self):
@@ -82,7 +89,7 @@ class BasePublisher(object):
             logger.debug('skipping create data: {}'.format(data))
             return
 
-        if self.results_count == self.limit:
+        if self.limit and self.results_count == self.limit:
             logger.debug('Removing id: %s from index', self.results[0])
             self.index.pop(self.results[0], None)
         else:
