@@ -132,7 +132,7 @@ class Bouncer(object):
                     user.username, network.name)
             )
             connected_channels = yield from ChannelStore.get({
-                'query': dict(
+                'filter': dict(
                     network_id=network.id,
                     status='1'
                 )
@@ -178,7 +178,7 @@ class Bouncer(object):
             bot = self.bots.get(key)
             self.register_client(key, client)
             connected_channels = yield from ChannelStore.get({
-                'query': dict(
+                'filter': dict(
                     network_id=key,
                     status='1'
                 )

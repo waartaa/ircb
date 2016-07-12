@@ -28,16 +28,28 @@ class ChannelStore(BaseStore):
     CREATE_OR_UPDATE_ERROR = STORE_CHANNEL_CREATE_OR_UPDATE_ERROR
 
     @classmethod
-    def get(cls, query):
-        if isinstance(query, dict):
-            qs = session.query(Channel)
-            if query.get('network_id'):
-                qs = qs.filter(Channel.network_id == query['network_id'])
-            if query.get('status'):
-                qs = qs.filter(Channel.status == query['status'])
-            return qs.all()
-        else:
-            return session.query(Channel).get(query)
+    def get(cls, filter=None, order_by=None, limit=None, sort=None):
+        qs = session.query(Channel)
+        if filter:
+            for key, value in filter.items():
+                qs = qs.filter(getattr(Channel, key) == value)
+
+        if order_by:
+            for item in order_by:
+                if item.startswith('-'):
+                    qs = qs.order_by(getattr(Channel, item[1:]).desc())
+                else:
+                    qs = qs.order_by(getattr(Channel, item))
+
+        if limit:
+            qs = qs.limit(limit)
+
+        if sort:
+            qs = session.query(Channel).\
+                filter(Channel.id.in_(qs.subquery())).\
+                order_by(Channel.timestamp).all()
+
+        return qs.all()
 
     @classmethod
     def create(cls, channel, network_id, password="", status=0):
