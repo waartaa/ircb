@@ -89,7 +89,4 @@ class Network(Base):
             self.status if isinstance(self.status, str) else self.status.code)
         d['ssl_verify'] = ssl_verify
         d['status'] = status
-        if serializable:
-            d['created'] = self.created.timestamp()
-            d['last_updated'] = self.last_updated.timestamp()
         return d

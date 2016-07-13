@@ -23,12 +23,24 @@ class BaseLog(object):
     last_updated = sa.Column(sa.DateTime,
                              default=datetime.datetime.utcnow)
 
-    def to_dict(self, serializable=False):
+    def to_dict(self, serializable=True):
         d = super().to_dict()
-        d['timestamp'] = self.timestamp.timestamp()
-        d['created'] = self.created.timestamp()
-        d['last_updated'] = self.last_updated.timestamp()
+        if serializable:
+            d['timestamp'] = self.timestamp.timestamp()
         return d
+
+    @classmethod
+    def from_dict(cls, data, serialized=True):
+        if serialized:
+            data['timestamp'] = datetime.datetime.fromtimestamp(
+                data['timestamp'])
+            if 'created' in data:
+                data['created'] = datetime.datetime.fromtimestamp(
+                    data['created'])
+            if 'last_updated' in data:
+                data['last_updated'] = datetime.datetime.fromtimestamp(
+                    data['last_updated'])
+        return cls(**data)
 
 
 class MessageLog(BaseLog, Base):

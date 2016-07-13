@@ -41,12 +41,12 @@ class BaseStore(object):
     def get(cls, data, raw=False):
         result = yield from cls._get(data)
         if isinstance(result, dict):
-            result = cls.model(**result) if raw is False else result
+            result = cls.model.from_dict(result) if raw is False else result
         elif isinstance(result, tuple):
             if raw:
                 result = result
             else:
-                result = [cls.model(**item) for item in result]
+                result = [cls.model.from_dict(item) for item in result]
         return result
 
     @classmethod
@@ -67,7 +67,7 @@ class BaseStore(object):
     @classmethod
     def create_or_update(cls, data):
         result = yield from cls._create_or_update(data)
-        return cls.model(**result)
+        return cls.model.from_dict(result)
 
     @classmethod
     def _get(cls, data):
@@ -166,7 +166,7 @@ class BaseStore(object):
             raw_callbacks = cls.raw_callbacks['delete']
         if callbacks:
             for callback in callbacks:
-                callback(cls.model(**data))
+                callback(cls.model.from_dict(data))
         if raw_callbacks:
             for callback in raw_callbacks:
                 callback(data)
