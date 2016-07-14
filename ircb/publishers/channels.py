@@ -15,6 +15,12 @@ class ChannelPublisher(BasePublisher):
         self.network_id = network_id
         super().__init__()
 
+    @property
+    def id(self):
+        return '{name}-{user_id}-{network_id}'.format(
+            name=self.name, user_id=self.user_id,
+            network_id=self.network_id)
+
     def fetch(self):
         filter = {
             'user_id': self.user_id
