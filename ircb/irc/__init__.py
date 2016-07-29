@@ -71,7 +71,7 @@ class IrcbBot(irc3.IrcBot):
         nick=None,
         realname='',
         userinfo=None,
-        host='localhost',
+        host='www.waartaa.com',
         port=6667,
         url='https://github.com/waartaa/ircb',
         passwords={},

@@ -62,7 +62,12 @@ LOGGING_CONF = dict(
             "level": "DEBUG",
             "propagate": False,
             "handlers": ["console"],
-        }
+        },
+        raw={
+            "level": "DEBUG",
+            "propagate": False,
+            "handlers": ["console"],
+        },
     ),
 )
 
