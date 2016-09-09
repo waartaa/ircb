@@ -17,11 +17,12 @@ logger = logging.getLogger('bouncer')
 
 class BouncerServerClientProtocol(Connection):
 
-    def __init__(self, get_bot_handle, unregister_client):
+    def __init__(self, get_bot_handle, unregister_client, get_sibling_clients):
         self.network = None
-        self.forward = None
+        self.bot = None
         self.get_bot_handle = get_bot_handle
         self.unregister_client = unregister_client
+        self.get_sibling_clients = get_sibling_clients
         self.host, self.port = None, None
         self.client_id = None
 
@@ -62,12 +63,24 @@ class BouncerServerClientProtocol(Connection):
                         'user_id': self.network.user_id
                     })
                     self.client_id = client.id
-            elif self.forward:
-                self.forward(line)
-        if self.forward is None:
-            self.forward = yield from self.get_bot_handle(
+            elif self.bot:
+                logger.debug(
+                    'Forwarding {}\t {}'.format(self.bot, line))
+                self.bot.raw(line)
+                if line.lstrip().startswith('PRIVMSG'):
+                    words = line.split()
+                    # Dispatch sent message to sibling clients for record
+                    if words[1].startswith('#'):
+                        mask = ':{nick}!~{realname}@* '.format(
+                            nick=self.bot.nick,
+                            realname=self.bot.config.get('realname', '')
+                        )
+                        for client in self.get_sibling_clients(self):
+                            client.send(mask + line)
+        if self.bot is None:
+            self.bot = yield from self.get_bot_handle(
                 self.network, self)
-            if self.forward is None:
+            if self.bot is None:
                 self.transport.write('Bot not connected')
                 self.transport.close()
                 asyncio.Task(ClientStore.delete({'id': self.client_id}))
@@ -103,7 +116,8 @@ class Bouncer(object):
         loop = asyncio.get_event_loop()
         coro = loop.create_server(
             lambda: BouncerServerClientProtocol(self.get_bot_handle,
-                                                self.unregister_client),
+                                                self.unregister_client,
+                                                self.get_sibling_clients),
             host, port)
         logger.info('Listening on {}:{}'.format(host, port))
         bouncer_server = loop.run_until_complete(coro)
@@ -213,14 +227,7 @@ class Bouncer(object):
 
             client.send(*['\r\n'.join(joining_messages_list)])
 
-            def forward(line):
-                bot = self.bots.get(key)
-                if bot:
-                    logger.debug(
-                        'Forwarding {}\t {}'.format(bot, line))
-                    bot.raw(line)
-
-            return forward
+            return bot
         except Exception as e:
             logger.error('get_bot_handle error: {}'.format(e),
                          exc_info=True)
@@ -250,6 +257,12 @@ class Bouncer(object):
             clients.remove(client)
         except KeyError:
             pass
+
+    def get_sibling_clients(self, client):
+        key = client.network.id
+        clients = set(self.clients[key])
+        siblings = clients.difference(set([client]))
+        return siblings
 
 
 def runserver(host='0.0.0.0', port=9000, mode='allinone'):
