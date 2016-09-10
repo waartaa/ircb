@@ -155,7 +155,7 @@ class Bouncer(object):
                 id=network.id,
                 user_id=user.id,
                 name=network.name,
-                username=user.username,
+                username=network.username or user.username,
                 user=user.username,
                 realname=network.realname or ' ',
                 password=network.password,
