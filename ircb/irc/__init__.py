@@ -70,7 +70,6 @@ class IrcbBot(irc3.IrcBot):
         irc3.IrcBot.defaults,
         nick=None,
         realname='',
-        userinfo=None,
         host='www.waartaa.com',
         port=6667,
         url='https://github.com/waartaa/ircb',
