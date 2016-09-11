@@ -1,4 +1,13 @@
+import os
+
 SECRET_KEY = 'some key'
+
+SSL = True
+
+SSL_CERT_PATH = os.path.join(os.path.dirname(__file__),
+                             'sample_ssl.cert')
+SSL_KEY_PATH = os.path.join(os.path.dirname(__file__),
+                            'sample_ssl.key')
 
 DB_URI = 'sqlite:///ircb.db'
 

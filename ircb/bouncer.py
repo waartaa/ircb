@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import asyncio
 import logging
+import ssl
 
 from collections import defaultdict
 
@@ -113,12 +114,16 @@ class Bouncer(object):
         NetworkStore.on('update', self.on_network_update)
 
     def start(self, host, port):
+        sc = None
+        if settings.SSL:
+            sc = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+            sc.load_cert_chain(settings.SSL_CERT_PATH, settings.SSL_KEY_PATH)
         loop = asyncio.get_event_loop()
         coro = loop.create_server(
             lambda: BouncerServerClientProtocol(self.get_bot_handle,
                                                 self.unregister_client,
                                                 self.get_sibling_clients),
-            host, port)
+            host, port, ssl=sc)
         logger.info('Listening on {}:{}'.format(host, port))
         bouncer_server = loop.run_until_complete(coro)
         try:
