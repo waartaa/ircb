@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
+import asyncio
 import click
 
-from ircb.bouncer import runserver
+from ircb import bouncer
 from ircb.web.app import runserver as webserver
 
 
@@ -18,7 +19,17 @@ def run_cli():
               help='Port, defaults to 9000')
 def run_allinone(host, port):
     """Run ircb in a single process"""
-    runserver(host, port, 'allinone')
+    import ircb.stores
+    import ircb.stores.base
+    ircb.stores.initialize()
+    loop = asyncio.get_event_loop()
+    bouncer_server = bouncer.Bouncer(loop).create(host, port)
+    try:
+        loop.run_forever()
+    except KeyboardInterrupt:
+        pass
+    bouncer_server.close()
+    loop.run_until_complete(bouncer_server.wait_closed())
 
 
 @click.command(name='stores')
@@ -37,7 +48,7 @@ def run_stores():
               help='Port, defaults to 9000')
 def run_bouncer(host, port):
     """Run ircb bouncer"""
-    runserver(host, port)
+    bouncer.runserver(host, port)
 
 
 @click.option('--host', '-h', default='0.0.0.0',
