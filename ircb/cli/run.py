@@ -11,17 +11,14 @@ def run_cli():
     pass
 
 
-@click.command(name='server')
+@click.command(name='allinone')
 @click.option('--host', '-h', default='0.0.0.0',
               help='Host, defaults to 0.0.0.0')
 @click.option('--port', '-p', default=9000,
               help='Port, defaults to 9000')
-@click.option('--mode', '-m', default='allinone',
-              type=click.Choice(
-                  ['allinone', 'bouncer']))
-def run_server(host, port, mode):
-    """Run ircb server"""
-    runserver(host, port, mode)
+def run_allinone(host, port):
+    """Run ircb in a single process"""
+    runserver(host, port, 'allinone')
 
 
 @click.command(name='stores')
@@ -33,6 +30,16 @@ def run_stores():
     ircb.stores.base.dispatcher.run_forever()
 
 
+@click.command(name='bouncer')
+@click.option('--host', '-h', default='0.0.0.0',
+              help='Host, defaults to 0.0.0.0')
+@click.option('--port', '-p', default=9000,
+              help='Port, defaults to 9000')
+def run_bouncer(host, port):
+    """Run ircb bouncer"""
+    runserver(host, port)
+
+
 @click.option('--host', '-h', default='0.0.0.0',
               help='Host, defaults to 0.0.0.0')
 @click.option('--port', '-p', default=10000,
@@ -42,7 +49,7 @@ def run_web(host, port):
     """Run ircb web server"""
     webserver(host, port)
 
-
-run_cli.add_command(run_server)
+run_cli.add_command(run_allinone)
+run_cli.add_command(run_bouncer)
 run_cli.add_command(run_stores)
 run_cli.add_command(run_web)
