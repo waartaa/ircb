@@ -2,41 +2,38 @@
 import asyncio
 import logging
 
-import ircb.stores
-from ircb.storeclient import NetworkStore
+from ircb.storeclient import NetworkStore, UserStore
+from ircb.storeclient import initialize as sc_initialize
+from ircb.connection import Connection
 from ircb.config import settings
 
 logger = logging.getLogger('identd')
 
-"""
-import socket
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-host = '0.0.0.0'
-port = 8001
-s.bind((host, port))
-s.listen(5)
-
-while True:
-    c, addr = s.accept()
-    data = c.recv(4096)
-
-    lport, rport = [_.strip() for _ in data.split(',')]
-
-    result = yield from NetworkStore.get({'query':{'lport': lport,
-                                                   'rport': rport}})
-    print(result)
-"""
-
-
-class IdentdServerProtocol(asyncio.Protocol):
+class IdentdServerProtocol(Connection):
     def connection_made(self, transport):
-        print('New client connection received')
+        logger.debug('New client connection received')
         self.transport = transport
 
     def data_received(self, data):
-        print(data)
+        asyncio.Task(self.handle_received_data(self.decode(data)))
+
+    @asyncio.coroutine
+    def handle_received_data(self, data):
+        logger.debug('RECV: {}'.format(data))
+        lport, rport = [_.strip() for _ in data.split(',')]
+
+        networks = yield from NetworkStore.get({
+            'query': {'lport': lport, 'rport': rport}
+        })
+        network = networks[0]
+        user = yield from UserStore.get({
+            'query': network.user_id
+        })
+        rpl_msg = '{lport}, {rport} : USERID : UNIX : {username}'.format(
+            lport=lport, rport=rport, username=user.username)
+        logger.debug('RPL: {}'.format(rpl_msg))
+        self.send(rpl_mgs)
 
 
 class IdentdServer(object):
@@ -65,7 +62,7 @@ class IdentdServer(object):
 
 def runserver(host='0.0.0.0', port=113):
     logging.config.dictConfig(settings.LOGGING_CONF)
-    ircb.stores.initialize()
+    sc_initialize()
     identd_server = IdentdServer()
     identd_server.start(host, port)
 
