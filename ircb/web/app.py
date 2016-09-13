@@ -47,17 +47,22 @@ def init(loop, host='0.0.0.0', port=10000):
                          NetworkConnectionView,
                          name='network_connection')
     srv = yield from loop.create_server(
-        app.make_handler(logger=logger, access_log=logger), '0.0.0.0', 10001)
+        app.make_handler(logger=logger, access_log=logger), host, port)
     return srv
+
+
+def createserver(loop, host='0.0.0.0', port=10000):
+    return loop.run_until_complete(init(loop, host, port))
 
 
 def runserver(host='0.0.0.0', port=10000):
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(init(loop, host=host, port=port))
+    server = createserver(loop, host=host, port=port)
     try:
         loop.run_forever()
     except KeyboardInterrupt:
         pass
+    loop.run_until_complete(server.wait_closed())
 
 if __name__ == '__main__':
     runserver()
