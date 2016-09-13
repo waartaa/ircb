@@ -36,8 +36,7 @@ A versatile IRC bouncer.
 
 ### Quickstart
 ```
-ircb run server
-ircb run web
+sudo ircb run allinone
 ```
 
 ### Advanced
@@ -46,8 +45,9 @@ You can run the various components of ``ircb``: ``stores``, ``bouncers`` as
 different processes.
 
 - Run stores as a different process: ``ircb run stores``
-- Run bouncer: ``ircb run server -m bouncer``
+- Run bouncer: ``ircb run bouncer``
 - Run web server: ``ircb run web``
+- Run identd server: ``sudo ircb run identd``
 
 ## Connecting for IRC client
 
