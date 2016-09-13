@@ -107,31 +107,35 @@ class BouncerServerClientProtocol(Connection):
 
 class Bouncer(object):
 
-    def __init__(self):
+    def __init__(self, loop=None):
+        self.loop = loop or asyncio.get_event_loop()
         self.bots = {}
         self.clients = defaultdict(set)
         NetworkStore.on('create', self.on_network_create)
         NetworkStore.on('update', self.on_network_update)
 
     def start(self, host, port):
+        loop = asyncio.get_event_loop()
+        server = self.create(host, port)
+        logger.info('Listening on {}:{}'.format(host, port))
+        try:
+            self.loop.run_forever()
+        except KeyboardInterrupt:
+            pass
+        server.close()
+        self.loop.run_until_complete(server.wait_closed())
+
+    def create(self, host, port):
         sc = None
         if settings.SSL:
             sc = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
             sc.load_cert_chain(settings.SSL_CERT_PATH, settings.SSL_KEY_PATH)
-        loop = asyncio.get_event_loop()
-        coro = loop.create_server(
+        coro = self.loop.create_server(
             lambda: BouncerServerClientProtocol(self.get_bot_handle,
                                                 self.unregister_client,
                                                 self.get_sibling_clients),
             host, port, ssl=sc)
-        logger.info('Listening on {}:{}'.format(host, port))
-        bouncer_server = loop.run_until_complete(coro)
-        try:
-            loop.run_forever()
-        except KeyboardInterrupt:
-            pass
-        bouncer_server.close()
-        loop.run_until_complete(bouncer_server.wait_closed())
+        return self.loop.run_until_complete(coro)
 
     def on_network_update(self, network, modified=None):
         asyncio.Task(self._on_network_create_update(network))
@@ -271,9 +275,7 @@ class Bouncer(object):
         return siblings
 
 
-def runserver(host='0.0.0.0', port=9000, mode='allinone'):
-    if mode == 'allinone':
-        ircb.stores.initialize()
+def runserver(host='0.0.0.0', port=9000):
     storeclient_initialize()
     bouncer = Bouncer()
     bouncer.start(host, port)

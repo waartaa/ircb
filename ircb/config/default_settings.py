@@ -77,6 +77,11 @@ LOGGING_CONF = dict(
             "propagate": False,
             "handlers": ["console"],
         },
+        identd={
+            "level": "DEBUG",
+            "propagate": False,
+            "handlers": ["console"],
+        }
     ),
 )
 
