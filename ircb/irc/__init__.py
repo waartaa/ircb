@@ -27,7 +27,7 @@ class IrcbIrcConnection(irc3.IrcConnection):
     @asyncio.coroutine
     def handle_connection_made(self, transport):
         logger.debug('Network connected: %s, %s, %s',
-                     self.factory.config.userinfo,
+                     self.factory.config.user,
                      self.factory.config.name, self.factory.config.nick)
         socket = transport.get_extra_info('socket')
         lhost, lport = socket.getsockname()
