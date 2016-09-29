@@ -25,7 +25,8 @@ setup(
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT',
         'Operating System :: POSIX :: Linux',
-        'Programming Language :: Python',
+        'Programming Language :: Python :: 3.5',
+        'Topic :: Internet :: WWW/HTTP :: WSGI :: Application',
         ],
     entry_points={
         'console_scripts': ['ircb=ircb.cli.main:cli']
