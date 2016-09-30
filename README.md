@@ -12,12 +12,44 @@ A versatile IRC bouncer.
 ## Setup
 
 - Install dependencies:
-``[sudo] pip3.5 install -r requirements.txt``
 
-- Copy and extend ``ircb/config/default_settings.py``, as needed, to a custom location. say, ``/etc/ircb/settings.py``.
+    ``[sudo] pip3.5 install -r requirements.txt``
+
+- Copy and extend
+
+    ``ircb/config/default_settings.py``, as needed,     to a custom location. say, ``/etc/ircb/settings.py``.
+
 - [OPTIONAL] ``export IRCB_SETTINGS=<path to your custom settings file>``
 
-- Install the project as a development dep ``python3.5 setup.py develop``
+- Install the project as a development dep
+
+    ``python3.5 setup.py develop``
+
+## Setup for development
+
+- Install system dependencies:
+
+    `` sudo dnf install python3-devel openssl-devel``
+
+    `` sudo pip install virtualenvwrapper``
+
+- Make `python3` virtualenv:
+
+    ``mkvirtualenv --python=/usr/bin/python3 python3``
+
+- Activate virtualenv:
+
+    ``workon python3``
+
+- Install dependencies:
+
+    ``pip3 install -r requirements.txt``
+
+- Install the project as development dep:
+
+    ``python3.5 setup.py develop``
+
+
 
 ## Setting up data
 - Creating a user:
