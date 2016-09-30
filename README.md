@@ -31,6 +31,8 @@ A versatile IRC bouncer.
 
     `` sudo dnf install python3-devel openssl-devel``
 
+    `` sudo pip install virtualenvwrapper``
+
 - Make `python3` virtualenv:
 
     ``mkvirtualenv --python=/usr/bin/python3 python3``
