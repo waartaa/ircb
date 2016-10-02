@@ -100,5 +100,30 @@ different processes.
 ## Connecting for IRC client
 
 Now, you should be able to connect to ``ircb`` from your IRC client at:
+
 - host/port: ``localhost/9000``
+
 - server password: ``<your network access token>``
+
+- IRC client should have the following settings enabled:
+
+    * Use SSL for all server on this network
+    * Accept invalid SSL certificate
+
+### Configure HexChat
+
+- Go to HexChat -> Network List
+
+- Change the nick to the nick you have given while configuring network
+
+- Under ``Network`` Click `Add` and name the server ``ircb``
+
+- Click on `Edit` then `Add` and type `localhost/9000`
+
+- Under ``Server`` tab check the ``SSL`` option mentioned above
+
+- Enter the ``Server Password`` in `Password` field
+
+- Close the dialog box and then connect to the network
+
+Note: In case the problem persist try to ``restart`` ircb server
