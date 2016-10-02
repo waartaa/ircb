@@ -15,8 +15,11 @@ SUBSCRIBER_ENDPOINTS = {
     'stores': 'tcp://127.0.0.1:35000',
 }
 
+LOGLEVEL = 'INFO'
+
 LOGGING_CONF = dict(
     version=1,
+    level=LOGLEVEL,
     formatters=dict(
         bare={
             "datefmt": "%Y-%m-%d %H:%M:%S",
@@ -27,7 +30,7 @@ LOGGING_CONF = dict(
         console={
             "class": "logging.StreamHandler",
             "formatter": "bare",
-            "level": "DEBUG",
+            "level": LOGLEVEL,
             "stream": "ext://sys.stdout",
         }
     ),
