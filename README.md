@@ -55,7 +55,7 @@ A versatile IRC bouncer.
 
 - Now, you need to run ``ircb stores``:
 
-    ``ircb stores``
+    ``ircb run stores``
 
 Continue with `` Setting up data``
 
