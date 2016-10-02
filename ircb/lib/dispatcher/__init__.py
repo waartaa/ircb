@@ -140,4 +140,5 @@ class Dispatcher(object):
                 e, callback, signal), exc_info=True)
 
     def run_forever(self):
+        logger.info('Running stores...')
         self.loop.run_forever()
