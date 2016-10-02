@@ -8,10 +8,11 @@ from ircb.utils.config import load_config
 
 
 @click.group()
-def cli():
+@click.option('--verbose', '-v', default=False, is_flag=True,
+              help='Show verbose logs')
+def cli(verbose):
     """ircb CLI"""
-    load_config()
-
+    load_config(verbose=verbose)
 
 cli.add_command(user_cli)
 cli.add_command(network_cli)
