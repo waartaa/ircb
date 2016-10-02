@@ -29,7 +29,7 @@ A versatile IRC bouncer.
 
 - Install system dependencies:
 
-    `` sudo dnf install python3-devel openssl-devel``
+    `` sudo dnf install python3-devel openssl-devel redis``
 
     `` sudo pip install virtualenvwrapper``
 
@@ -49,7 +49,15 @@ A versatile IRC bouncer.
 
     ``python3.5 setup.py develop``
 
+- Make sure `REDIS` is running:
 
+    ``sudo systemctl start redis.service``
+
+- Now, you need to run ``ircb stores``:
+
+    ``ircb stores``
+
+Continue with `` Setting up data``
 
 ## Setting up data
 - Creating a user:
@@ -69,8 +77,16 @@ A versatile IRC bouncer.
 ### Quickstart
 ```
 sudo ircb run allinone
+
 ```
 
+Note: If you are using virtualenv `sudo` will not work this way, you need to
+run:
+
+```
+sudo ~/.virtualenvs/python3/bin/ircb run allinone
+
+```
 ### Advanced
 
 You can run the various components of ``ircb``: ``stores``, ``bouncers`` as
