@@ -29,7 +29,7 @@ A versatile IRC bouncer.
 
 - Install system dependencies:
 
-    `` sudo dnf install python3-devel openssl-devel``
+    `` sudo dnf install python3-devel openssl-devel redis``
 
     `` sudo pip install virtualenvwrapper``
 
@@ -49,7 +49,15 @@ A versatile IRC bouncer.
 
     ``python3.5 setup.py develop``
 
+- Make sure `REDIS` is running:
 
+    ``sudo systemctl start redis.service``
+
+- Now, you need to run ``ircb stores``:
+
+    ``ircb run stores``
+
+Continue with `` Setting up data``
 
 ## Setting up data
 - Creating a user:
@@ -69,8 +77,16 @@ A versatile IRC bouncer.
 ### Quickstart
 ```
 sudo ircb run allinone
+
 ```
 
+Note: If you are using virtualenv `sudo` will not work this way, you need to
+run:
+
+```
+sudo ~/.virtualenvs/python3/bin/ircb run allinone
+
+```
 ### Advanced
 
 You can run the various components of ``ircb``: ``stores``, ``bouncers`` as
@@ -84,5 +100,30 @@ different processes.
 ## Connecting for IRC client
 
 Now, you should be able to connect to ``ircb`` from your IRC client at:
+
 - host/port: ``localhost/9000``
+
 - server password: ``<your network access token>``
+
+- IRC client should have the following settings enabled:
+
+    * Use SSL for all server on this network
+    * Accept invalid SSL certificate
+
+### Configure HexChat
+
+- Go to HexChat -> Network List
+
+- Change the nick to the nick you have given while configuring network
+
+- Under ``Network`` Click `Add` and name the server ``ircb``
+
+- Click on `Edit` then `Add` and type `localhost/9000`
+
+- Under ``Server`` tab check the ``SSL`` option mentioned above
+
+- Enter the ``Server Password`` in `Password` field
+
+- Close the dialog box and then connect to the network
+
+Note: In case the problem persist try to ``restart`` ircb server
