@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 from ircb.models import Client, Network, get_session
 from ircb.lib.constants.signals import (STORE_CLIENT_CREATE,
                                         STORE_CLIENT_CREATED,

@@ -1,5 +1,8 @@
+# -*- coding: utf-8 -*-
 from __future__ import absolute_import
+
 import os
+
 from . import default_settings
 
 
@@ -23,7 +26,8 @@ class Settings(object):
             with open(settings_path) as f:
                 code = compile(f.read(), settings_path, 'exec')
                 exec(code, self._data)
-            self._data.pop('__builtins__', None)
+            # FIXME: Do not remove __builtins__
+            # self._data.pop('__builtins__', None)
 
     def __getitem__(self, key):
         return self._data.get(key)

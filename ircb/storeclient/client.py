@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+from ircb.models import Client
 from ircb.storeclient.base import BaseStore
 from ircb.lib.constants.signals import (STORE_CLIENT_CREATE,
                                         STORE_CLIENT_CREATED,
@@ -10,3 +12,5 @@ class ClientStore(BaseStore):
     CREATED_SIGNAL = STORE_CLIENT_CREATED
     DELETE_SIGNAL = STORE_CLIENT_DELETE
     DELETED_SIGNAL = STORE_CLIENT_DELETED
+
+    model = Client

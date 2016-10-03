@@ -11,7 +11,7 @@ with open('requirements.txt') as f:
 
 setup(
     name='ircb',
-    version='0.1',
+    version='0.3.0',
     description='A IRC bouncer',
     long_description=''.join(open('README.md').readlines()),
     keywords='irc, client, bouncer',
@@ -23,9 +23,10 @@ setup(
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: MIT',
+        'License :: OSI Approved :: MIT License',
         'Operating System :: POSIX :: Linux',
-        'Programming Language :: Python',
+        'Programming Language :: Python :: 3.5',
+        'Topic :: Internet :: WWW/HTTP :: WSGI :: Application',
         ],
     entry_points={
         'console_scripts': ['ircb=ircb.cli.main:cli']

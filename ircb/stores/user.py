@@ -1,6 +1,8 @@
-from ircb.lib.constants.signals import (
-    STORE_USER_CREATE, STORE_USER_CREATED,
-    STORE_USER_GET, STORE_USER_GOT)
+# -*- coding: utf-8 -*-
+from ircb.lib.constants.signals import (STORE_USER_CREATE,
+                                        STORE_USER_CREATED,
+                                        STORE_USER_GET,
+                                        STORE_USER_GOT)
 from ircb.models import get_session, User
 from ircb.stores.base import BaseStore
 
@@ -22,8 +24,16 @@ class UserStore(BaseStore):
             return qs.all()
         elif isinstance(query, tuple):
             key, value = query
-            return session.query(User).filter(
-                getattr(User, key) == value).first()
+            if key == 'auth':
+                username, password = value
+                user = session.query(User).filter(
+                    User.username == username).first()
+                if user and user.authenticate(password):
+                    return user
+                return None
+            else:
+                return session.query(User).filter(
+                    getattr(User, key) == value).first()
         else:
             return session.query(User).get(query)
 

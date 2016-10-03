@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from ircb.storeclient.base import BaseStore
+from ircb.models import Channel
 from ircb.lib.constants.signals import (STORE_CHANNEL_CREATE,
                                         STORE_CHANNEL_CREATED,
                                         STORE_CHANNEL_GET,
@@ -21,3 +22,5 @@ class ChannelStore(BaseStore):
     DELETE_SIGNAL = STORE_CHANNEL_DELETE
     DELETED_SIGNAL = STORE_CHANNEL_DELETED
     CREATE_OR_UPDATE_SIGNAL = STORE_CHANNEL_CREATE_OR_UPDATE
+
+    model = Channel

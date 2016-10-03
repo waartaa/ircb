@@ -1,9 +1,11 @@
 import datetime
+
 from flask_user import UserMixin
-from sqlalchemy import (Column, String, Unicode, Boolean, ForeignKey, Integer,
-                        DateTime)
+from sqlalchemy import Column, String, Unicode, Boolean, ForeignKey, Integer
+from sqlalchemy import DateTime
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy_utils import PasswordType
+
 from ircb.models.lib import Base
 
 
@@ -22,8 +24,8 @@ class User(Base, UserMixin):
 
     # User information
     active = Column('is_active', Boolean(), nullable=False, server_default='0')
-    first_name = Column(Unicode(50), nullable=False, server_default=u'')
-    last_name = Column(Unicode(50), nullable=False, server_default=u'')
+    first_name = Column(Unicode(50), nullable=True, server_default=u'')
+    last_name = Column(Unicode(50), nullable=True, server_default=u'')
 
     # Relationships
     roles = relationship('Role', secondary='users_roles',
@@ -32,6 +34,17 @@ class User(Base, UserMixin):
     # Timestamps
     created = Column(DateTime, default=datetime.datetime.utcnow)
     last_updated = Column(DateTime, default=datetime.datetime.utcnow)
+
+    def to_dict(self, serializable=False):
+        d = super().to_dict()
+        d.pop('password')
+        d['is_active'] = self.is_active()
+        return d
+
+    def authenticate(self, password):
+        if self.password == password:
+            return True
+        return False
 
 
 class Role(Base):

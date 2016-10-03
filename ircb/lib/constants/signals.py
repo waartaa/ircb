@@ -39,3 +39,15 @@ STORE_CLIENT_CREATE = 'store-client-create'
 STORE_CLIENT_CREATED = 'store-client-created'
 STORE_CLIENT_DELETE = 'store-client-delete'
 STORE_CLIENT_DELETED = 'store-client-deleted'
+
+# MessageLog store
+STORE_MESSAGELOG_GET = 'store-messagelog-get'
+STORE_MESSAGELOG_GOT = 'store-messagelog-got'
+STORE_MESSAGELOG_CREATE = 'store-messagelog-create'
+STORE_MESSAGELOG_CREATED = 'store-messagelog-created'
+
+# ActivityLog store
+STORE_ACTIVITYLOG_GET = 'store-activitylog-get'
+STORE_ACTIVITYLOG_GOT = 'store-activitylog-got'
+STORE_ACTIVITYLOG_CREATE = 'store-activitylog-create'
+STORE_ACTIVITYLOG_CREATED = 'store-activitylog-created'

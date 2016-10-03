@@ -27,7 +27,7 @@ class IrcbIrcConnection(irc3.IrcConnection):
     @asyncio.coroutine
     def handle_connection_made(self, transport):
         logger.debug('Network connected: %s, %s, %s',
-                     self.factory.config.userinfo,
+                     self.factory.config.user,
                      self.factory.config.name, self.factory.config.nick)
         socket = transport.get_extra_info('socket')
         lhost, lport = socket.getsockname()
@@ -70,8 +70,7 @@ class IrcbBot(irc3.IrcBot):
         irc3.IrcBot.defaults,
         nick=None,
         realname='',
-        userinfo=None,
-        host='localhost',
+        host='www.waartaa.com',
         port=6667,
         url='https://github.com/waartaa/ircb',
         passwords={},
@@ -80,15 +79,21 @@ class IrcbBot(irc3.IrcBot):
             userinfo='{userinfo}',
             time='{now:%c}'
         ),
-        includes=['ircb.irc.plugins.ircb', 'ircb.irc.plugins.autojoins'],
-        connection=IrcbIrcConnection
+        includes=['ircb.irc.plugins.ircb', 'ircb.irc.plugins.autojoins',
+                  'ircb.irc.plugins.logger'],
+        connection=IrcbIrcConnection,
     )
+    defaults['irc3.plugins.logger'] = {
+        'handler': 'ircb.irc.plugins.logger.StoreHandler'}
     cmd_regex = re.compile(
         r'(?P<cmd>[A-Z]+)(?:\s+(?P<args>[^\:]+))?(?:\s*\:(?P<msg>.*))?')
 
     def __init__(self, *args, **kwargs):
         self.clients = None
         super().__init__(*args, **kwargs)
+
+    def reload_config(self, *ini, **config):
+        self.config = irc3.utils.Config(dict(self.defaults, *ini, **config))
 
     def run_in_loop(self):
         """Run bot in an already running event loop"""

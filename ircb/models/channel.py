@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
-
 import datetime
 
-from sqlalchemy import (Column, String, Integer, ForeignKey, DateTime,
-                        UniqueConstraint)
+from sqlalchemy import Column, String, Integer, ForeignKey, DateTime
+from sqlalchemy import UniqueConstraint
 from sqlalchemy_utils import ChoiceType
 
 from ircb.config import settings
@@ -38,3 +37,9 @@ class Channel(Base):
     # timestamps
     created = Column(DateTime, default=datetime.datetime.utcnow)
     last_updated = Column(DateTime, default=datetime.datetime.utcnow)
+
+    def to_dict(self):
+        d = super().to_dict()
+        d['status'] = self.status if isinstance(self.status, str) \
+            else self.status.code
+        return d
