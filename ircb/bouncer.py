@@ -115,9 +115,7 @@ class Bouncer(object):
         NetworkStore.on('update', self.on_network_update)
 
     def start(self, host, port):
-        loop = asyncio.get_event_loop()
         server = self.create(host, port)
-        logger.info('Listening on {}:{}'.format(host, port))
         try:
             self.loop.run_forever()
         except KeyboardInterrupt:
@@ -135,6 +133,7 @@ class Bouncer(object):
                                                 self.unregister_client,
                                                 self.get_sibling_clients),
             host, port, ssl=sc)
+        logger.info('Listening on {}:{}'.format(host, port))
         return self.loop.run_until_complete(coro)
 
     def on_network_update(self, network, modified=None):

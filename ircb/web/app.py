@@ -52,6 +52,7 @@ def init(loop, host='0.0.0.0', port=10000):
 
 
 def createserver(loop, host='0.0.0.0', port=10000):
+    logger.info('Listening on {host}:{port}'.format(host=host, port=port))
     return loop.run_until_complete(init(loop, host, port))
 
 
