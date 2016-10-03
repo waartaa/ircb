@@ -18,6 +18,8 @@ def run_cli():
               help='Host for bouncer, defaults to 0.0.0.0')
 @click.option('--port', '-p', default=9000,
               help='Port for bouncer, defaults to 9000')
+@click.option('--enable-identd', '-i', default=False, is_flag=True,
+              help='Run with identd')
 @click.option('--identd-host', default='0.0.0.0',
               help='Host for identd, defaults to 0.0.0.0')
 @click.option('--identd-port', default=113,
@@ -26,7 +28,7 @@ def run_cli():
               help='Host for web server, defaults to 0.0.0.0')
 @click.option('--web-port', default=10000,
               help='Port for web server, defaults to 10000')
-def run_allinone(host, port, identd_host, identd_port,
+def run_allinone(host, port, enable_identd, identd_host, identd_port,
                  web_host, web_port):
     """Run ircb in a single process"""
     import ircb.stores
@@ -35,17 +37,21 @@ def run_allinone(host, port, identd_host, identd_port,
     ircb.stores.initialize()
     loop = asyncio.get_event_loop()
     bouncer_server = bouncer.Bouncer(loop).create(host, port)
-    identd_server = identd.IdentdServer(loop).create(identd_host, identd_port)
+    if enable_identd:
+        identd_server = identd.IdentdServer(loop).create(
+            identd_host, identd_port)
     web_server = web.createserver(loop, web_host, web_port)
     try:
         loop.run_forever()
     except KeyboardInterrupt:
         pass
     bouncer_server.close()
-    identd_server.close()
+    web_server.close()
     loop.run_until_complete(bouncer_server.wait_closed())
-    loop.run_until_complete(identd_server.wait_closed())
     loop.run_until_complete(web_server.wait_closed())
+    if enable_identd:
+        identd_server.close()
+        loop.run_until_complete(identd_server.wait_closed())
 
 
 @click.command(name='stores')
