@@ -115,7 +115,6 @@ class Bouncer(object):
         NetworkStore.on('update', self.on_network_update)
 
     def start(self, host, port):
-        loop = asyncio.get_event_loop()
         server = self.create(host, port)
         try:
             self.loop.run_forever()
