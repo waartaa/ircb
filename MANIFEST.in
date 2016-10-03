@@ -1,3 +1,7 @@
 include LICENSE
 include requirements.txt
-include README.md
+include CHANGELOG.rst
+include alembic.ini
+include tox.ini
+recursive-include *.py
+recursive-include alembic *
