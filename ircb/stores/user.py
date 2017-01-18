@@ -38,8 +38,14 @@ class UserStore(BaseStore):
             return session.query(User).get(query)
 
     @classmethod
-    def create(cls, username, email, password):
-        user = User(username=username, email=email, password=password)
+    def create(cls, username, email, password, first_name, last_name):
+        user = User(
+            username=username,
+            email=email,
+            password=password,
+            first_name=first_name,
+            last_name=last_name
+        )
         session.add(user)
         session.commit()
         return user
