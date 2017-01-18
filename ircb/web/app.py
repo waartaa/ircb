@@ -21,8 +21,7 @@ def index(request):
     return web.Response(body=b"Hello, ircb!")
 
 
-@asyncio.coroutine
-def init(loop, host='0.0.0.0', port=10000):
+async def init(loop, host='0.0.0.0', port=10000):
     from ircb.storeclient import initialize
     initialize()
     load_config()
@@ -46,7 +45,7 @@ def init(loop, host='0.0.0.0', port=10000):
     app.router.add_route('PUT', '/api/v1/network/{id}/{action}',
                          NetworkConnectionView,
                          name='network_connection')
-    srv = yield from loop.create_server(
+    srv = await loop.create_server(
         app.make_handler(logger=logger, access_log=logger), host, port)
     return srv
 

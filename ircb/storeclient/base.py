@@ -38,8 +38,8 @@ class BaseStore(object):
             dispatcher.register(cls._on_message, signal=signal)
 
     @classmethod
-    def get(cls, data, raw=False):
-        result = yield from cls._get(data)
+    async def get(cls, data, raw=False):
+        result = await cls._get(data)
         if isinstance(result, dict):
             result = cls.model.from_dict(result) if raw is False else result
         elif isinstance(result, tuple):
@@ -50,27 +50,27 @@ class BaseStore(object):
         return result
 
     @classmethod
-    def create(cls, data, async=False, timeout=10):
-        result = yield from cls._create(data, async)
+    async def create(cls, data, isasync=False, timeout=10):
+        result = await cls._create(data, isasync)
         return cls.model(**result)
 
     @classmethod
-    def update(cls, data):
-        result = yield from cls._update(data)
+    async def update(cls, data):
+        result = await cls._update(data)
         return cls.model(**result)
 
     @classmethod
-    def delete(cls, data):
-        result = yield from cls._delete(data)
+    async def delete(cls, data):
+        result = await cls._delete(data)
         return result
 
     @classmethod
-    def create_or_update(cls, data):
-        result = yield from cls._create_or_update(data)
+    async def create_or_update(cls, data):
+        result = await cls._create_or_update(data)
         return cls.model.from_dict(result)
 
     @classmethod
-    def _get(cls, data):
+    async def _get(cls, data):
         task_id = cls.get_task_id(data)
         fut = asyncio.Future()
 
@@ -81,11 +81,11 @@ class BaseStore(object):
         dispatcher.register(callback, signal=cls.GOT_SIGNAL)
         dispatcher.send(cls.GET_SIGNAL, data, taskid=task_id)
 
-        result = yield from fut
+        result = await fut
         return fut.result()
 
     @classmethod
-    def _create(cls, data, async=False):
+    async def _create(cls, data, isasync=False):
         task_id = cls.get_task_id(data)
         fut = asyncio.Future()
 
@@ -96,11 +96,11 @@ class BaseStore(object):
         dispatcher.register(callback, signal=cls.CREATED_SIGNAL)
         dispatcher.send(cls.CREATE_SIGNAL, data, taskid=task_id)
 
-        result = yield from fut
+        result = await fut
         return fut.result()
 
     @classmethod
-    def _update(cls, data):
+    async def _update(cls, data):
         task_id = cls.get_task_id(data)
         future = asyncio.Future()
 
@@ -110,11 +110,11 @@ class BaseStore(object):
         dispatcher.register(callback, signal=cls.UPDATED_SIGNAL)
         dispatcher.send(cls.UPDATE_SIGNAL, data, taskid=task_id)
 
-        result = yield from future
+        result = await future
         return result
 
     @classmethod
-    def _delete(cls, data):
+    async def _delete(cls, data):
         task_id = cls.get_task_id(data)
         future = asyncio.Future()
 
@@ -124,11 +124,11 @@ class BaseStore(object):
         dispatcher.register(callback, signal=cls.DELETED_SIGNAL)
         dispatcher.send(cls.DELETE_SIGNAL, data, taskid=task_id)
 
-        result = yield from future
+        result = await future
         return result
 
     @classmethod
-    def _create_or_update(cls, data, async=False):
+    async def _create_or_update(cls, data, isasync=False):
         task_id = cls.get_task_id(data)
         fut = asyncio.Future()
 
@@ -140,7 +140,7 @@ class BaseStore(object):
         dispatcher.register(callback, signal=cls.UPDATED_SIGNAL)
         dispatcher.send(cls.CREATE_OR_UPDATE_SIGNAL, data, taskid=task_id)
 
-        result = yield from fut
+        result = await fut
         return fut.result()
 
     @classmethod

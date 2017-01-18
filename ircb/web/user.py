@@ -12,22 +12,21 @@ from ircb.forms.user import UserForm
 
 class SignupView(web.View):
 
-    @asyncio.coroutine
-    def post(self):
-        username = yield from auth.get_auth(self.request)
+    async def post(self):
+        username = await auth.get_auth(self.request)
         if username:
             raise web.HTTPForbidden()
-        data = yield from self.request.post()
+        data = await self.request.post()
         form = UserForm(formdata=data)
         form.validate()
-        yield from self._validate_username(form)
-        yield from self._validate_email(form)
+        await self._validate_username(form)
+        await self._validate_email(form)
         if form.errors:
             return web.Response(body=json.dumps(form.errors).encode(),
                                 status=400,
                                 content_type='application/json')
         cleaned_data = form.data
-        yield from UserStore.create(
+        await UserStore.create(
             dict(
                 username=cleaned_data['username'],
                 email=cleaned_data['email'],
@@ -38,17 +37,17 @@ class SignupView(web.View):
         )
         return web.Response(body=b'OK')
 
-    def _validate_username(self, form):
+    async def _validate_username(self, form):
         username = form.username.data
-        users = yield from UserStore.get(
+        users = await UserStore.get(
             dict(query=('username', username)))
         if users:
             error_msg = 'Username already in use.'
             form.username.errors.append(error_msg)
 
-    def _validate_email(self, form):
+    async def _validate_email(self, form):
         email = form.email.data
-        users = yield from UserStore.get(
+        users = await UserStore.get(
             dict(query=('email', email)))
         if users:
             error_msg = 'Email already in use.'
