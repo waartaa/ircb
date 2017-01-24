@@ -13,3 +13,6 @@ sdist
 
 */config/networks.json
 */config/users.json
+
+#Docs
+_build
