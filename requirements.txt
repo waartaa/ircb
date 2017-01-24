@@ -15,3 +15,4 @@ aiohttp-session[secure]==0.5.0
 aiozmq==0.7.1
 msgpack-python==0.4.7
 PyYAML==3.11
+sphinxcontrib-httpdomain
