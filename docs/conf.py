@@ -14,6 +14,13 @@
 
 import os
 import pkg_resources
+import sys
+
+sys.path.insert(0, os.path.abspath('.'))
+sys.path.insert(0, os.path.abspath('..'))
+sys.path.insert(0, os.path.abspath('../..'))
+print(sys.path)
+
 
 __version__ = pkg_resources.get_distribution('ircb').version
 
