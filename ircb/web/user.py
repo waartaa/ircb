@@ -11,6 +11,18 @@ from ircb.forms.user import UserForm
 
 
 class SignupView(web.View):
+    """
+    .. http:post:: /api/v1/signup/
+
+        :string username: **Required**. The username of the user.
+        :string email: **Required**. The email of the user.
+        :string password: **Required**. The password of the user.
+        :string first_name: The first name of the user.
+        :string last_name: The last name of the user.
+
+        Example URL: https://www.ircb.io/api/v1/?username=foobar&email=foobar@localhost&password=foobar
+    """
+
 
     async def post(self):
         username = await auth.get_auth(self.request)
