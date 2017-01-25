@@ -20,7 +20,9 @@ sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('..'))
 
 
-__version__ = pkg_resources.get_distribution('ircb').version
+#TODO: Un-comment this when the readthedocs supports Python 3.5
+#__version__ = pkg_resources.get_distribution('ircb').version
+__version__ = '0.3.0'
 
 is_rtd = os.environ.get('READTHEDOCS', None) == True
 
