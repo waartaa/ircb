@@ -1,0 +1,31 @@
+name: py35
+dependencies:
+    - openssl=1.0.2g=0
+    - pip=8.1.1=py35_0
+    - python=3.5.1=0
+    - readline=6.2=2
+    - setuptools=20.3=py35_0
+    - sqlite=3.9.2=0
+    - tk=8.5.18=0
+    - wheel=0.29.0=py35_0
+    - xz=5.0.5=1
+    - zlib=1.2.8=0
+    - pip:
+        - Flask==0.10.1
+        - Flask-SQLAlchemy==2.0
+        - Flask-User==0.6.11
+        - SQLAlchemy==1.0.13
+        - SQLAlchemy-Utils==0.30.15
+        - irc3==0.9.3
+        - alembic==0.8.3
+        - WTForms-Alchemy==0.15.0
+        - click==6.3
+        - aioredis==0.2.4
+        - tabulate==0.7.5
+        - aiohttp==1.2.0
+        - aiohttp-auth==0.1.1
+        - aiohttp-session[secure]==0.5.0
+        - aiozmq==0.7.1
+        - msgpack-python==0.4.7
+        - PyYAML==3.11
+        - sphinxcontrib-httpdomain
