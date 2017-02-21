@@ -94,3 +94,9 @@ REDIS_PORT = 6379
 
 # A 32 byte string
 WEB_SALT = b'c237202ee55411e584f4cc3d8237ff4b'
+
+# Redis keys
+REDIS_KEYS = {
+    'STORE': 'store',
+    'STORE_CLIENTS': 'store_clients'
+}
