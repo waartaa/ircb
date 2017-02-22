@@ -36,7 +36,7 @@ class SignupView(web.View):
                                 status=400,
                                 content_type='application/json')
         cleaned_data = form.data
-        access_code = await UserStore.create(
+        user = await UserStore.create(
             dict(
                 username=cleaned_data['username'],
                 email=cleaned_data['email'],
@@ -47,13 +47,15 @@ class SignupView(web.View):
         )
         resp = {
             'status': STATUS_OK,
-            'content': 'application/json',
+            'content_type': 'application/json',
             'charset': 'utf-8',
-            'body': {
-                'username': username,
-                'access_code': access_code,
-            }
         }
+
+        resp.update({'body': json.dumps({
+            'username': user.username,
+            'access_token': user.access_token,
+        }).encode()})
+
         return web.Response(**resp)
 
     async def _validate_username(self, form):
@@ -74,15 +76,41 @@ class SignupView(web.View):
 
 
 class SigninView(web.View):
+    """
+    .. http:post:: /api/v1/signin/
 
-    @asyncio.coroutine
-    def post(self):
-        data = yield from self.request.post()
-        user = yield from UserStore.get(
-            dict(query=('auth', (data.get('username'), data.get('password'))))
-        )
+        :string username: **Required**. The username of the user.
+        :string password: **Required**. The password of the user.
+
+        If the header contains the `access_token` then password is not
+        required.
+    """
+
+    async def post(self):
+        token = self.request.headers.get('Authorization')
+
+        data = await self.request.post()
+        username = data.get('username')
+        password = data.get('password')
+
+        if password is None and token is None:
+            raise web.HTTPForbidden()
+
+        if password is not None:
+            user = await UserStore.get(
+                dict(query=('auth',
+                            (username, password))
+                )
+            )
+        elif access_token is not None:
+            user = await UserStore.get(
+                dict(query=('auth',
+                            (username, access_token))
+                )
+            )
+
         if user:
-            yield from auth.remember(self.request, user.username)
+            await auth.remember(self.request, user.username)
             return web.Response(body=b'OK')
         raise web.HTTPForbidden()
 
