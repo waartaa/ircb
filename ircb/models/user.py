@@ -1,12 +1,24 @@
 import datetime
 
+from hashlib import md5
+
 from flask_user import UserMixin
 from sqlalchemy import Column, String, Unicode, Boolean, ForeignKey, Integer
 from sqlalchemy import DateTime
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy_utils import PasswordType
 
+from ircb.config import settings
 from ircb.models.lib import Base
+
+
+def _create_access_token(email, username):
+    return md5('{}{}{}{}'.format(
+        settings.SECRET_KEY,
+        email,
+        username,
+        datetime.datetime.utcnow()).encode()
+    ).hexdigest()
 
 
 class User(Base, UserMixin):
@@ -34,6 +46,11 @@ class User(Base, UserMixin):
     # Timestamps
     created = Column(DateTime, default=datetime.datetime.utcnow)
     last_updated = Column(DateTime, default=datetime.datetime.utcnow)
+
+    access_token = Column(String(100), nullable=False, unique=True,
+                          default=lambda context: _create_access_token(
+                            context.current_parameters['email'],
+                            context.current_parameters['username']))
 
     def to_dict(self, serializable=False):
         d = super().to_dict()
