@@ -7,6 +7,7 @@ from aiohttp_auth import auth
 
 from ircb.storeclient import UserStore
 from ircb.web.decorators import auth_required
+from ircb.web.constants import STATUS_OK
 from ircb.forms.user import UserForm
 
 
@@ -19,10 +20,7 @@ class SignupView(web.View):
         :string password: **Required**. The password of the user.
         :string first_name: The first name of the user.
         :string last_name: The last name of the user.
-
-        Example URL: https://www.ircb.io/api/v1/?username=foobar&email=foobar@localhost&password=foobar
     """
-
 
     async def post(self):
         username = await auth.get_auth(self.request)
@@ -38,16 +36,25 @@ class SignupView(web.View):
                                 status=400,
                                 content_type='application/json')
         cleaned_data = form.data
-        await UserStore.create(
+        access_code = await UserStore.create(
             dict(
                 username=cleaned_data['username'],
                 email=cleaned_data['email'],
-                password=cleaned_data['password'],
+                password=cleaned_data.get('password', ''),
                 first_name=cleaned_data.get('first_name', ''),
                 last_name=cleaned_data.get('last_name', '')
             )
         )
-        return web.Response(body=b'OK')
+        resp = {
+            'status': STATUS_OK,
+            'content': 'application/json',
+            'charset': 'utf-8',
+            'body': {
+                'username': username,
+                'access_code': access_code,
+            }
+        }
+        return web.Response(**resp)
 
     async def _validate_username(self, form):
         username = form.username.data
