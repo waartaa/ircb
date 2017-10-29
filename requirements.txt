@@ -7,7 +7,7 @@ irc3==0.9.3
 alembic==0.8.3
 WTForms-Alchemy==0.15.0
 click==6.7
-aioredis==0.2.4
+aioredis==0.3.4
 tabulate==0.7.5
 aiohttp==0.20.2
 aiohttp-auth==0.1.1

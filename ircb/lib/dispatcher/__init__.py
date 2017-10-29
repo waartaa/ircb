@@ -3,6 +3,7 @@ import asyncio
 import aiozmq.rpc
 import aioredis
 import logging
+import sys
 
 from collections import defaultdict
 
@@ -40,9 +41,19 @@ class Handler(aiozmq.rpc.AttrHandler):
                 self._lock.release()
                 return
             self._dispatcher.publisher.transport.connect(subscriber_addr)
-            redis = yield from aioredis.create_redis(
-                (settings.REDIS_HOST, settings.REDIS_PORT)
-            )
+            try:
+                logger.debug('Connecting to redis at {}:{}...'.format(
+                    settings.REDIS_HOST, settings.REDIS_PORT))
+                redis = yield from aioredis.create_redis(
+                    (settings.REDIS_HOST, settings.REDIS_PORT),
+                    timeout=5
+                )
+                logger.debug('Connected to redis')
+            except (IOError, ConnectionRefusedError) as e:
+                logger.error('Failed to connect to redis at {}:{}'.format(
+                    settings.REDIS_HOST, settings.REDIS_PORT))
+                logger.error('Exiting...')
+                sys.exit(1)
             yield from redis.set(key, 1)
             redis.close()
         finally:
@@ -77,9 +88,19 @@ class Dispatcher(object):
 
     @asyncio.coroutine
     def setup_pubsub(self):
-        redis = yield from aioredis.create_redis(
-            (settings.REDIS_HOST, settings.REDIS_PORT)
-        )
+        try:
+            logger.debug('Connecting to redis at {}:{}...'.format(
+                settings.REDIS_HOST, settings.REDIS_PORT))
+            redis = yield from aioredis.create_redis(
+                (settings.REDIS_HOST, settings.REDIS_PORT),
+                timeout=5
+            )
+            logger.debug('Connected to redis')
+        except (IOError, ConnectionRefusedError) as e:
+            logger.error('Failed to connect to redis at {}:{}'.format(
+                settings.REDIS_HOST, settings.REDIS_PORT))
+            logger.error('Exiting...')
+            sys.exit(1)
         if self.role == 'stores':
             bind_addr = settings.SUBSCRIBER_ENDPOINTS[self.role]
         else:
@@ -106,6 +127,9 @@ class Dispatcher(object):
                 yield from asyncio.sleep(0.01)
         self.lock.release()
         redis.close()
+        if self.role == 'stores':
+            logger.info('Running {role} at {addr}...'.format(
+                role=self.role, addr=bind_addr))
 
     @property
     def subscriber_endpoints(self):
@@ -141,5 +165,4 @@ class Dispatcher(object):
                 e, callback, signal), exc_info=True)
 
     def run_forever(self):
-        logger.info('Running stores...')
         self.loop.run_forever()
