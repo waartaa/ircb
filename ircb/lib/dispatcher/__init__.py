@@ -46,7 +46,8 @@ class Handler(aiozmq.rpc.AttrHandler):
             yield from redis.set(key, 1)
             redis.close()
         finally:
-            self._lock.release()
+            if self._lock.locked():
+                self._lock.release()
 
 
 class Dispatcher(object):
